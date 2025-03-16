@@ -5,9 +5,8 @@ import lombok.Data;
 import lombok.*;
 
 import java.time.LocalDate;
-
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 @Data
 public class CreateUserRequest {

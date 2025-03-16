@@ -6,10 +6,11 @@ import lombok.*;
 
 import java.time.LocalDate;
 
+
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Data
 public class UserResponse {
     private Long id;
     private String username;

@@ -18,7 +18,8 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ApiResponse<UserResponse> createUser(@RequestBody CreateUserRequest request) {
+    public ApiResponse<UserResponse> createUser(@RequestBody(required = false)
+                                                    CreateUserRequest request) {
 
         return ApiResponse.<UserResponse>builder()
                 .message("Created user successfully.")
@@ -37,7 +38,8 @@ public class UserController {
 
     @PutMapping("/{userId}")
     public ApiResponse<UserResponse> updateUser(@PathVariable Long userId,
-                                                @RequestBody UpdateUserRequest request) {
+                                                @RequestBody(required = false)
+                                                UpdateUserRequest request) {
 
     return ApiResponse.<UserResponse>builder()
             .message("Updated user successfully.")

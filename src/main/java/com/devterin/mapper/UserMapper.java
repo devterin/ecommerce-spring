@@ -1,14 +1,13 @@
 package com.devterin.mapper;
 
 import com.devterin.dto.request.CreateUserRequest;
-import com.devterin.dto.request.UpdateUserRequest;
 import com.devterin.dto.response.UserResponse;
 import com.devterin.entity.User;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserMapper {
-    public UserResponse toUserResponse(User user) {
+    public UserResponse toDTO(User user) {
         return UserResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -20,7 +19,7 @@ public class UserMapper {
                 .build();
     }
 
-    public User toUser(CreateUserRequest request) {
+    public User toEntity(CreateUserRequest request) {
         return User.builder()
                 .username(request.getUsername())
                 .fullName(request.getFullName())

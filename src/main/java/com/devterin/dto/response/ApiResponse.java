@@ -4,14 +4,21 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @Data
+@Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
     @Builder.Default
-    private int code = 100;
+    private boolean success = true ;
     private String message;
     private T data;
+    private ErrorDetail error;
+
+    @Data
+    @Builder
+    public static class ErrorDetail {
+        private int code;
+        private String message;
+    }
+
 }

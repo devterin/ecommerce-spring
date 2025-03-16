@@ -5,6 +5,8 @@ import com.devterin.dto.request.UpdateUserRequest;
 import com.devterin.dto.response.UserResponse;
 import com.devterin.entity.Role;
 import com.devterin.entity.User;
+import com.devterin.exception.AppException;
+import com.devterin.exception.ErrorCode;
 import com.devterin.mapper.UserMapper;
 import com.devterin.repository.RoleRepository;
 import com.devterin.repository.UserRepository;
@@ -26,29 +28,33 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse createUser(CreateUserRequest request) {
 
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
+
         Role roles = Role.builder()
                 .name(RoleType.USER.name())
                 .build();
         roleRepository.save(roles);
 
-        User user = userMapper.toUser(request);
+        User user = userMapper.toEntity(request);
         user.setPassword(request.getPassword());
         user.setRoles(Set.of(roles));
         user = userRepository.save(user);
 
-        return userMapper.toUserResponse(user);
+        return userMapper.toDTO(user);
     }
 
     @Override
     public List<UserResponse> getUsers() {
-        return userRepository.findAll().stream().map(userMapper::toUserResponse).toList();
+        return userRepository.findAll().stream().map(userMapper::toDTO).toList();
     }
 
     @Override
     public UserResponse updateUser(Long userId, UpdateUserRequest request) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         user.setPassword(request.getPassword());
         user.setFullName(request.getFullName());
@@ -57,7 +63,7 @@ public class UserServiceImpl implements UserService {
         user.setAddress(request.getAddress());
         user.setPhoneNumber(request.getPhoneNumber());
 
-        return userMapper.toUserResponse(userRepository.save(user));
+        return userMapper.toDTO(userRepository.save(user));
     }
 
     @Override
@@ -65,7 +71,6 @@ public class UserServiceImpl implements UserService {
         if (!userRepository.existsById(userId)) {
             throw new RuntimeException("User not found");
         }
-
         userRepository.deleteById(userId);
     }
 
