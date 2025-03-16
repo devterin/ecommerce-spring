@@ -5,7 +5,9 @@ import com.devterin.dto.request.UpdateUserRequest;
 import com.devterin.dto.response.ApiResponse;
 import com.devterin.dto.response.UserResponse;
 import com.devterin.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,7 +20,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ApiResponse<UserResponse> createUser(@RequestBody(required = false)
+    public ApiResponse<UserResponse> createUser(@Valid @RequestBody(required = false)
                                                     CreateUserRequest request) {
 
         return ApiResponse.<UserResponse>builder()
