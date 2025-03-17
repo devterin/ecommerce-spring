@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.Date;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -13,7 +15,7 @@ public class UpdateUserRequest {
     private String password;
     private String fullName;
     private String email;
-    private LocalDate dob;
+    private Date dob;
     private String phoneNumber;
     private String address;
 }

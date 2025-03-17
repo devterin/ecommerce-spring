@@ -42,7 +42,7 @@ public class User extends BaseEntity  {
     private boolean active;
 
     @Column(name = "dob")
-    private LocalDate dob;
+    private Date dob;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

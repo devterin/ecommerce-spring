@@ -13,9 +13,12 @@ public enum ErrorCode {
     USER_NOT_FOUND(102, "User not found", HttpStatus.NOT_FOUND), //404
     USERNAME_INVALID(103, "Username must be between 5 and 50 characters", HttpStatus.BAD_REQUEST),
     USERNAME_PATTERN_INVALID(104, "Username must only contain letters and numbers, without spaces or special characters", HttpStatus.BAD_REQUEST),
-    PASSWORD_INVALID(105, "Password must be between 5 and 50 characters", HttpStatus.BAD_REQUEST),
-    USERNAME_NOT_EMPTY(108, "Username not empty", HttpStatus.BAD_REQUEST),
-    INVALID_KEY(106, "Invalid message key", HttpStatus.BAD_REQUEST);
+    USERNAME_NOT_BLANK_INVALID(105, "Username not blank", HttpStatus.BAD_REQUEST),
+    PASSWORD_INVALID(106, "Password must be between 5 and 50 characters", HttpStatus.BAD_REQUEST),
+    INVALID_KEY(107, "Invalid message key", HttpStatus.BAD_REQUEST),
+    PHONE_INVALID(108, "Invalid phone number", HttpStatus.BAD_REQUEST),
+    DOB_INVALID(109, "Invalid date of birth", HttpStatus.BAD_REQUEST),
+            ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;
