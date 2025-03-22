@@ -1,19 +1,19 @@
 package com.devterin.security;
 
-import io.jsonwebtoken.Claims;
-import io.micrometer.common.util.StringUtils;
+import com.devterin.dto.response.ApiResponse;
+import com.devterin.exception.ErrorCode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotNull;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -30,13 +30,15 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenUtil jwtTokenUtil;
     private final UserDetailsService userDetailsService;
+    private final ObjectMapper objectMapper;
+
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain)
             throws ServletException, IOException {
-        log.info("-----JWT_AUTHENTICATION_REQUEST---");
+        log.info("-----JWT_AUTHENTICATION_REQUEST-----");
 
         String authHeader = request.getHeader("Authorization");
         String token;
@@ -44,11 +46,30 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
+
             return;
         }
 
-        token = authHeader.substring(7);
-        username = jwtTokenUtil.extractUsername(token);
+        try {
+            token = authHeader.substring(7);
+            username = jwtTokenUtil.extractUsername(token);
+        } catch (ExpiredJwtException ex) {
+            ErrorCode errorCode = ErrorCode.TOKEN_EXPIRED;
+
+            var apiResponse = ApiResponse.builder()
+                    .success(false)
+                    .error(ApiResponse.ErrorDetail.builder()
+                            .code(errorCode.getCode())
+                            .message(errorCode.getMessage())
+                            .build())
+                    .build();
+
+            response.setStatus(errorCode.getStatusCode().value());
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
+
+            return;
+        }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);

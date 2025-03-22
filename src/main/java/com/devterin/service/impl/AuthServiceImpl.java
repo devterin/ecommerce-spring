@@ -4,22 +4,20 @@ import com.devterin.dto.request.IntrospectRequest;
 import com.devterin.dto.request.LoginRequest;
 import com.devterin.dto.response.IntrospectResponse;
 import com.devterin.dto.response.LoginResponse;
+import com.devterin.dto.response.RefreshTokenResponse;
+import com.devterin.entity.User;
 import com.devterin.exception.AppException;
 import com.devterin.exception.ErrorCode;
 import com.devterin.repository.UserRepository;
 import com.devterin.security.JwtTokenUtil;
 import com.devterin.service.AuthService;
-import io.jsonwebtoken.Claims;
+import com.devterin.service.UserService;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +25,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenUtil jwtTokenUtil;
-
+    private final UserService userService;
     @Override
     public LoginResponse authenticated(LoginRequest request) {
         var user = userRepository.findByUsername(request.getUsername()).orElseThrow(
@@ -48,7 +46,7 @@ public class AuthServiceImpl implements AuthService {
 
         if (auth.isAuthenticated()) {
             accessToken = jwtTokenUtil.generateToken(user);
-            refreshToken = jwtTokenUtil.generateToken(user);
+            refreshToken = jwtTokenUtil.generateRefreshToken(user);
         }
 
         return LoginResponse.builder()
@@ -57,6 +55,7 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 
+    @Override
     public IntrospectResponse introspect(IntrospectRequest request) {
         var token = request.getToken();
         boolean isValid = true;
@@ -71,4 +70,28 @@ public class AuthServiceImpl implements AuthService {
                 .valid(isValid)
                 .build();
     }
+
+    @Override
+    public RefreshTokenResponse refreshToken(String refreshToken) {
+
+        if (refreshToken == null) {
+            throw new RuntimeException("Token must be not null");
+        }
+
+        String username = jwtTokenUtil.verifyRefreshToken(refreshToken);
+        User user = userService.findByUsername(username);
+
+        if (user == null) {
+            throw new AppException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        String newAccessToken  = jwtTokenUtil.generateToken(user);
+
+        return RefreshTokenResponse.builder()
+                .userId(user.getId())
+                .refreshToken(newAccessToken)
+                .build();
+    }
+
+
 }

@@ -23,6 +23,7 @@ public enum ErrorCode {
     LOGIN_FAILED(111, "Username or password incorrect", HttpStatus.UNAUTHORIZED), //401
     USER_NOT_EXISTED(112, "User not existed", HttpStatus.BAD_REQUEST), //400
     INVALID_TOKEN(113, "Invalid Access Token", HttpStatus.BAD_REQUEST), //400
+    TOKEN_EXPIRED(114, "Access token expired", HttpStatus.UNAUTHORIZED), //401
 
 
     ;

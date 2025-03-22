@@ -56,10 +56,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> {
-                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                            String errMess = "Unauthorized: " + authException.getMessage();
-                            response.getWriter().write(errMess);
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage());
                         }))
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

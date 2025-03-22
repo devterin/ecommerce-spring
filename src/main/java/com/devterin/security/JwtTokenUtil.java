@@ -23,21 +23,27 @@ import java.util.stream.Collectors;
 public class JwtTokenUtil {
 
     @NonFinal
-    @Value("${jwt.secretKey}")
-    private String secretKey;
+    @Value("${jwt.secretKey.accessToken}")
+    private String ACCESS_KEY;
+
+    @NonFinal
+    @Value("${jwt.secretKey.refreshToken}")
+    private String REFRESH_KEY;
 
     @NonFinal
     @Value("${jwt.expire.accessToken}")
-    private long expirationAccessToken;
+    private long ACCESS_EXPIRATION;
 
     @NonFinal
     @Value("${jwt.expire.refreshToken}")
-    private long expirationRefreshToken;
+    private long REFRESH_EXPIRATION;
 
     // decode and get the key
-    private SecretKey getSecretKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-
+    private SecretKey getSecretKey(String key) {
+        byte[] keyBytes = Decoders.BASE64.decode(key);
+        if (key == null || key.isEmpty()) {
+            throw new IllegalArgumentException("Secret key cannot be null or empty");
+        }
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
@@ -50,11 +56,18 @@ public class JwtTokenUtil {
                 .id(UUID.randomUUID().toString())
                 .issuer("devterin")
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expirationAccessToken))
-                .signWith(getSecretKey())
+                .expiration(new Date(System.currentTimeMillis() + ACCESS_EXPIRATION))
+                .signWith(getSecretKey(ACCESS_KEY))
                 .compact();
     }
-
+    public String generateRefreshToken(User user) {
+        return Jwts.builder()
+                .subject(user.getUsername())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION))
+                .signWith(getSecretKey(REFRESH_KEY))
+                .compact();
+    }
 
     private String getRoles(UserDetails userDetails) {
 
@@ -77,26 +90,19 @@ public class JwtTokenUtil {
         final String userName = extractUsername(token);
 
         Jwts.parser()
-                .verifyWith(getSecretKey())
+                .verifyWith(getSecretKey(ACCESS_KEY))
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
 
         return userName.equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
-    public String extractToken(HttpServletRequest request){
-        String bearerToken = request.getHeader("Authorization");
-        if(bearerToken != null && bearerToken.startsWith("Bearer ")){
-            return bearerToken.substring(7);
-        }
 
-        return null;
-    }
 
     public Claims extractAllClaims(String token) {
 
         return Jwts.parser()
-                .verifyWith(getSecretKey())
+                .verifyWith(getSecretKey(ACCESS_KEY))
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
@@ -117,6 +123,15 @@ public class JwtTokenUtil {
 
     public boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
+    }
+
+    public String verifyRefreshToken(String token) {
+        return Jwts.parser()
+                .verifyWith(getSecretKey(REFRESH_KEY))
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getSubject();
     }
 
 }

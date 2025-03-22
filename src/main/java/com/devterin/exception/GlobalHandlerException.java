@@ -1,6 +1,7 @@
 package com.devterin.exception;
 
 import com.devterin.dto.response.ApiResponse;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -89,7 +90,6 @@ public class GlobalHandlerException {
 
         return ResponseEntity.badRequest().body(apiResponse);
     }
-
 
 
 }

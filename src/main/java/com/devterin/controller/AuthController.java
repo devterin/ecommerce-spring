@@ -2,17 +2,17 @@ package com.devterin.controller;
 
 import com.devterin.dto.request.IntrospectRequest;
 import com.devterin.dto.request.LoginRequest;
+import com.devterin.dto.request.RefreshTokenRequest;
 import com.devterin.dto.response.ApiResponse;
 import com.devterin.dto.response.IntrospectResponse;
 import com.devterin.dto.response.LoginResponse;
+import com.devterin.dto.response.RefreshTokenResponse;
 import com.devterin.service.AuthService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@CrossOrigin("*")
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
 public class AuthController {
@@ -30,6 +30,16 @@ public class AuthController {
     public ApiResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest request) {
         return ApiResponse.<IntrospectResponse>builder()
                 .result(authService.introspect(request))
+                .build();
+    }
+
+    @PostMapping("/refresh-token")
+    public ApiResponse<RefreshTokenResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
+
+        var result = authService.refreshToken(request.getRefreshToken());
+
+        return ApiResponse.<RefreshTokenResponse>builder()
+                .result(result)
                 .build();
     }
 }
