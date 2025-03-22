@@ -1,6 +1,6 @@
 package com.devterin.utils;
 
-public enum RoleType {
+public enum TypeUser {
     USER,
     ADMIN
 }

@@ -9,6 +9,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.security.SignatureException;
+import java.text.ParseException;
 import java.util.Date;
 
 @RestControllerAdvice
@@ -31,10 +33,10 @@ public class GlobalHandlerException {
         return ResponseEntity.status(errorCode.getStatusCode()).body(apiResponse);
     }
 
-    @ExceptionHandler(AppException.class)
+    @ExceptionHandler(value = AppException.class)
     ResponseEntity<ApiResponse<?>> handlingAppException(AppException e) {
         ErrorCode errorCode = e.getErrorCode();
-        log.error("Exception occurred: ", e);
+        log.error(e.getMessage());
 
         ApiResponse<?> apiResponse = ApiResponse.builder()
                 .success(false)
@@ -46,7 +48,8 @@ public class GlobalHandlerException {
 
         return ResponseEntity.status(errorCode.getStatusCode()).body(apiResponse);
     }
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+
+    @ExceptionHandler(value = MethodArgumentNotValidException.class)
     ResponseEntity<ApiResponse<?>> handlingMethodArgumentNotValid(MethodArgumentNotValidException e) {
         String enumKey = e.getFieldError().getDefaultMessage();
 
@@ -70,7 +73,7 @@ public class GlobalHandlerException {
         return ResponseEntity.badRequest().body(apiResponse);
     }
 
-    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ExceptionHandler(value = HttpMessageNotReadableException.class)
     ResponseEntity<ApiResponse<?>> handlingHttpMessageNotReadable(HttpMessageNotReadableException e) {
         ErrorCode errorCode = ErrorCode.DOB_INVALID;
         log.error(e.getMessage());
@@ -86,6 +89,7 @@ public class GlobalHandlerException {
 
         return ResponseEntity.badRequest().body(apiResponse);
     }
+
 
 
 }

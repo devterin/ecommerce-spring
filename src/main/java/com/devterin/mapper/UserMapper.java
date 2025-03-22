@@ -3,6 +3,7 @@ package com.devterin.mapper;
 import com.devterin.dto.request.CreateUserRequest;
 import com.devterin.dto.response.UserResponse;
 import com.devterin.entity.User;
+import com.devterin.utils.TypeGender;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,6 +14,7 @@ public class UserMapper {
                 .username(user.getUsername())
                 .fullName(user.getFullName())
                 .email(user.getEmail())
+                .typeGender(user.getGender())
                 .dob(user.getDob())
                 .phoneNumber(user.getPhoneNumber())
                 .address(user.getAddress())
@@ -24,6 +26,7 @@ public class UserMapper {
                 .username(request.getUsername())
                 .fullName(request.getFullName())
                 .email(request.getEmail())
+                .gender(TypeGender.valueOf(request.getGender()))
                 .dob(request.getDob())
                 .phoneNumber(request.getPhoneNumber())
                 .address(request.getAddress())

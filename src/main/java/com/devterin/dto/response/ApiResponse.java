@@ -10,7 +10,7 @@ public class ApiResponse<T> {
     @Builder.Default
     private boolean success = true ;
     private String message;
-    private T data;
+    private T result;
     private ErrorDetail error;
 
     @Data

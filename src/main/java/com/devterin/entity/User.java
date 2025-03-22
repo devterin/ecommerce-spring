@@ -1,11 +1,17 @@
 package com.devterin.entity;
 
+import com.devterin.utils.TypeGender;
 import jakarta.persistence.*;
 
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 @AllArgsConstructor
@@ -15,7 +21,7 @@ import java.util.Set;
 @Builder
 @Entity
 @Table(name = "users")
-public class User extends BaseEntity  {
+public class User extends BaseEntity implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -41,8 +47,11 @@ public class User extends BaseEntity  {
     @Column(name = "is_active")
     private boolean active;
 
+    @Column(name = "gender")
+    private TypeGender gender;
+
     @Column(name = "dob")
-    private Date dob;
+    private LocalDate dob;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -52,4 +61,13 @@ public class User extends BaseEntity  {
     )
     private Set<Role> roles;
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        if (getRoles() != null) {
+            for (Role roles : getRoles())
+                authorities.add(new SimpleGrantedAuthority("ROLE_" + roles.getName()));
+        }
+        return authorities;
+    }
 }

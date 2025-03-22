@@ -5,7 +5,9 @@ import jakarta.persistence.*;
 
 import lombok.*;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Base64;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -37,4 +39,5 @@ public class BaseEntity {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
 }

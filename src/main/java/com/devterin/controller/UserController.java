@@ -7,12 +7,12 @@ import com.devterin.dto.response.UserResponse;
 import com.devterin.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@CrossOrigin("*")
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/user")
 public class UserController {
@@ -25,7 +25,7 @@ public class UserController {
 
         return ApiResponse.<UserResponse>builder()
                 .message("Created user successfully.")
-                .data(userService.createUser(request))
+                .result(userService.createUser(request))
                 .build();
     }
 
@@ -34,7 +34,7 @@ public class UserController {
 
         return ApiResponse.<List<UserResponse>>builder()
                 .message("Success")
-                .data(userService.getUsers())
+                .result(userService.getUsers())
                 .build();
     }
 
@@ -45,7 +45,7 @@ public class UserController {
 
     return ApiResponse.<UserResponse>builder()
             .message("Updated user successfully.")
-            .data(userService.updateUser(userId,request))
+            .result(userService.updateUser(userId,request))
             .build();
     }
 

@@ -11,8 +11,11 @@ import com.devterin.mapper.UserMapper;
 import com.devterin.repository.RoleRepository;
 import com.devterin.repository.UserRepository;
 import com.devterin.service.UserService;
-import com.devterin.utils.RoleType;
+import com.devterin.utils.TypeUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,20 +28,24 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
+
     @Override
     public UserResponse createUser(CreateUserRequest request) {
 
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new AppException(ErrorCode.USER_EXISTED);
         }
-
-        Role roles = Role.builder()
-                .name(RoleType.USER.name())
-                .build();
-        roleRepository.save(roles);
+        Role roles = roleRepository.findByName(TypeUser.USER.name());
+        if (roles == null) {
+            roles = Role.builder()
+                    .name(TypeUser.USER.name())
+                    .build();
+            roleRepository.save(roles);
+        }
 
         User user = userMapper.toEntity(request);
-        user.setPassword(request.getPassword());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRoles(Set.of(roles));
         user = userRepository.save(user);
 
@@ -56,7 +63,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        user.setPassword(request.getPassword());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
         user.setDob(request.getDob());
@@ -74,4 +81,10 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(userId);
     }
 
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+    }
 }

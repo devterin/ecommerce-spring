@@ -1,6 +1,8 @@
 package com.devterin.dto.request;
 
-import com.devterin.validator.Phone;
+import com.devterin.utils.TypeGender;
+import com.devterin.validator.gender.GenderSubSet;
+import com.devterin.validator.phone.Phone;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,7 +14,6 @@ import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -30,9 +31,13 @@ public class CreateUserRequest {
     private String fullName;
     private String email;
 
+    @GenderSubSet(name = "gender", enumClass = TypeGender.class)
+    @NotNull(message = "GENDER_NOTBLANK_INVALID")
+    private String gender;
+
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @JsonFormat(pattern = "MM-dd-yyyy")
-    private Date dob;
+    private LocalDate dob;
 
     @Phone
     private String phoneNumber;

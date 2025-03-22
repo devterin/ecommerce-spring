@@ -1,9 +1,11 @@
 package com.devterin.dto.response;
 
+import com.devterin.utils.TypeGender;
 import lombok.Builder;
 import lombok.Data;
 import lombok.*;
-import java.util.Date;
+
+import java.time.LocalDate;
 
 
 @Data
@@ -15,7 +17,8 @@ public class UserResponse {
     private String username;
     private String fullName;
     private String email;
-    private Date dob;
+    private TypeGender typeGender;
+    private LocalDate dob;
     private String phoneNumber;
     private String address;
 }

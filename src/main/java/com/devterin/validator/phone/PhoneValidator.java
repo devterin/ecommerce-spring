@@ -1,4 +1,4 @@
-package com.devterin.validator;
+package com.devterin.validator.phone;
 
 import com.devterin.exception.ErrorCode;
 import jakarta.validation.ConstraintValidator;
