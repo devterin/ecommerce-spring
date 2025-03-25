@@ -1,4 +1,4 @@
-package com.devterin.dto.response;
+package com.devterin.dtos.response;
 
 import lombok.Builder;
 import lombok.Data;

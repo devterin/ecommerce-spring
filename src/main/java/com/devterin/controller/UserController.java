@@ -1,12 +1,15 @@
 package com.devterin.controller;
 
-import com.devterin.dto.request.CreateUserRequest;
-import com.devterin.dto.request.UpdateUserRequest;
-import com.devterin.dto.response.ApiResponse;
-import com.devterin.dto.response.UserResponse;
+import com.devterin.dtos.request.CreateUserRequest;
+import com.devterin.dtos.request.UpdateUserRequest;
+import com.devterin.dtos.response.ApiResponse;
+import com.devterin.dtos.response.UserResponse;
 import com.devterin.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,7 +33,11 @@ public class UserController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<List<UserResponse>> getUsers(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("User: " + authentication.getName());
+        System.out.println("Roles: " + authentication.getAuthorities());
 
         return ApiResponse.<List<UserResponse>>builder()
                 .message("Success")

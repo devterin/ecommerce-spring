@@ -1,4 +1,4 @@
-package com.devterin.dto.request;
+package com.devterin.dtos.request;
 
 import com.devterin.utils.TypeGender;
 import com.devterin.validator.gender.GenderSubSet;
@@ -32,7 +32,7 @@ public class CreateUserRequest {
     private String email;
 
     @GenderSubSet(name = "gender", enumClass = TypeGender.class)
-    @NotNull(message = "GENDER_NOTBLANK_INVALID")
+    @NotNull(message = "GENDER_NOT_BLANK_INVALID")
     private String gender;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)

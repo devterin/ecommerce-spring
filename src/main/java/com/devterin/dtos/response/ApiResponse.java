@@ -1,4 +1,4 @@
-package com.devterin.dto.response;
+package com.devterin.dtos.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
@@ -15,8 +15,9 @@ public class ApiResponse<T> {
 
     @Data
     @Builder
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class ErrorDetail {
-        private int code;
+        private Integer code;
         private String message;
     }
 

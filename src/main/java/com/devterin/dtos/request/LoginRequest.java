@@ -1,4 +1,4 @@
-package com.devterin.dto.request;
+package com.devterin.dtos.request;
 
 import lombok.Builder;
 import lombok.Data;

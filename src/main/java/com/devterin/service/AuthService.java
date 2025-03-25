@@ -1,11 +1,10 @@
 package com.devterin.service;
 
-import com.devterin.dto.request.IntrospectRequest;
-import com.devterin.dto.request.LoginRequest;
-import com.devterin.dto.request.RefreshTokenRequest;
-import com.devterin.dto.response.IntrospectResponse;
-import com.devterin.dto.response.LoginResponse;
-import com.devterin.dto.response.RefreshTokenResponse;
+import com.devterin.dtos.request.IntrospectRequest;
+import com.devterin.dtos.request.LoginRequest;
+import com.devterin.dtos.response.IntrospectResponse;
+import com.devterin.dtos.response.LoginResponse;
+import com.devterin.dtos.response.RefreshTokenResponse;
 
 public interface AuthService {
     LoginResponse authenticated(LoginRequest request);

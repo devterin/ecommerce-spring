@@ -1,8 +1,8 @@
 package com.devterin.service.impl;
 
-import com.devterin.dto.request.CreateUserRequest;
-import com.devterin.dto.request.UpdateUserRequest;
-import com.devterin.dto.response.UserResponse;
+import com.devterin.dtos.request.CreateUserRequest;
+import com.devterin.dtos.request.UpdateUserRequest;
+import com.devterin.dtos.response.UserResponse;
 import com.devterin.entity.Role;
 import com.devterin.entity.User;
 import com.devterin.exception.AppException;
@@ -12,7 +12,6 @@ import com.devterin.repository.RoleRepository;
 import com.devterin.repository.UserRepository;
 import com.devterin.service.UserService;
 import com.devterin.utils.TypeUser;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

@@ -52,7 +52,7 @@ public class JwtTokenUtil {
 
         return Jwts.builder()
                 .subject(user.getUsername())
-                .claim("role", getRoles(user))
+                .claim("roles", getRoles(user))
                 .id(UUID.randomUUID().toString())
                 .issuer("devterin")
                 .issuedAt(new Date(System.currentTimeMillis()))
@@ -60,9 +60,10 @@ public class JwtTokenUtil {
                 .signWith(getSecretKey(ACCESS_KEY))
                 .compact();
     }
-    public String generateRefreshToken(User user) {
+    public String generateRefreshToken(String username) {
         return Jwts.builder()
-                .subject(user.getUsername())
+                .subject(username)
+                .id(UUID.randomUUID().toString())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION))
                 .signWith(getSecretKey(REFRESH_KEY))

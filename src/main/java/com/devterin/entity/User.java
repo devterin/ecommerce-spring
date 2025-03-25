@@ -45,7 +45,7 @@ public class User extends BaseEntity implements UserDetails {
     private String password;
 
     @Column(name = "is_active")
-    private boolean active;
+    private Boolean active;
 
     @Column(name = "gender")
     private TypeGender gender;

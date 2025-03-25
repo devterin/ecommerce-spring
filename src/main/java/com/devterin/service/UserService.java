@@ -1,10 +1,9 @@
 package com.devterin.service;
 
-import com.devterin.dto.request.CreateUserRequest;
-import com.devterin.dto.request.UpdateUserRequest;
-import com.devterin.dto.response.UserResponse;
+import com.devterin.dtos.request.CreateUserRequest;
+import com.devterin.dtos.request.UpdateUserRequest;
+import com.devterin.dtos.response.UserResponse;
 import com.devterin.entity.User;
-import io.jsonwebtoken.Claims;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.List;

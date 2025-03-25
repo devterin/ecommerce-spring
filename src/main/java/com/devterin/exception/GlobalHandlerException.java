@@ -1,18 +1,12 @@
 package com.devterin.exception;
 
-import com.devterin.dto.response.ApiResponse;
-import io.jsonwebtoken.ExpiredJwtException;
-import jakarta.servlet.http.HttpServletRequest;
+import com.devterin.dtos.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.security.SignatureException;
-import java.text.ParseException;
-import java.util.Date;
 
 @RestControllerAdvice
 @Slf4j
@@ -25,6 +19,7 @@ public class GlobalHandlerException {
 
         ApiResponse<?> apiResponse = ApiResponse.builder()
                 .success(false)
+                .message(e.getMessage())
                 .error(ApiResponse.ErrorDetail.builder()
                         .code(errorCode.getCode())
                         .message(errorCode.getMessage())
@@ -74,17 +69,15 @@ public class GlobalHandlerException {
         return ResponseEntity.badRequest().body(apiResponse);
     }
 
-    @ExceptionHandler(value = HttpMessageNotReadableException.class)
-    ResponseEntity<ApiResponse<?>> handlingHttpMessageNotReadable(HttpMessageNotReadableException e) {
-        ErrorCode errorCode = ErrorCode.DOB_INVALID;
-        log.error(e.getMessage());
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<?>> handleInvalidJson(HttpMessageNotReadableException e) {
+        log.error("Invalid JSON: {}", e.getMessage());
 
         ApiResponse<?> apiResponse = ApiResponse.builder()
                 .success(false)
-                .message("Validation failed")
+                .message("JSON parse error")
                 .error(ApiResponse.ErrorDetail.builder()
-                        .code(errorCode.getCode())
-                        .message(errorCode.getMessage())
+                        .message(e.getMessage())
                         .build())
                 .build();
 

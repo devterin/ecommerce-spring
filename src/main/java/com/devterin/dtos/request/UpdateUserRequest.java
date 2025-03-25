@@ -1,12 +1,10 @@
-package com.devterin.dto.request;
+package com.devterin.dtos.request;
 
 import lombok.Builder;
 import lombok.Data;
 import lombok.*;
-import org.springframework.cglib.core.Local;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @AllArgsConstructor
 @NoArgsConstructor

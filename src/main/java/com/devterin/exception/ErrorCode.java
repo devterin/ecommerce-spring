@@ -19,11 +19,12 @@ public enum ErrorCode {
     PHONE_INVALID(108, "Invalid phone number", HttpStatus.BAD_REQUEST),
     DOB_INVALID(109, "Invalid date of birth", HttpStatus.BAD_REQUEST),
     GENDER_INVALID(110, "Invalid gender", HttpStatus.BAD_REQUEST),
-    GENDER_NOTBLANK_INVALID(111, "Gender must be not blank", HttpStatus.BAD_REQUEST),
+    GENDER_NOT_BLANK_INVALID(111, "Gender must be not blank", HttpStatus.BAD_REQUEST),
     LOGIN_FAILED(111, "Username or password incorrect", HttpStatus.UNAUTHORIZED), //401
     USER_NOT_EXISTED(112, "User not existed", HttpStatus.BAD_REQUEST), //400
     INVALID_TOKEN(113, "Invalid Access Token", HttpStatus.BAD_REQUEST), //400
     TOKEN_EXPIRED(114, "Access token expired", HttpStatus.UNAUTHORIZED), //401
+    JSON_INVALID(115, "Json invalid", HttpStatus.BAD_REQUEST), //401
 
 
     ;
