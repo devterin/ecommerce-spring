@@ -5,7 +5,9 @@ import com.devterin.dtos.request.ProductRequest;
 import com.devterin.dtos.response.ProductResponse;
 import com.devterin.entity.Product;
 import com.devterin.entity.ProductImage;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface ProductService {
@@ -13,6 +15,7 @@ public interface ProductService {
     List<ProductResponse> getAllProducts();
     ProductResponse updateProduct(Long productId, ProductRequest request);
     void deleteProduct(Long productId);
-    Product getProductById(Long productId);
-    ProductImageDTO createProductImage(Long productId, ProductImage productImage);
+    ProductResponse getProductById(Long productId);
+    Product getProductObjById(Long productId);
+
 }

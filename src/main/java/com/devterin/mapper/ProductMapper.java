@@ -10,10 +10,11 @@ public class ProductMapper {
         return ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
-                .categoryName(product.getCategory().getName())
+                .category(product.getCategory().getName())
                 .price(product.getPrice())
                 .description(product.getDescription())
                 .thumbnail(product.getThumbnail())
+                .image(product.getImages().size())
                 .build();
     }
 }

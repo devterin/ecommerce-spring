@@ -1,11 +1,9 @@
 package com.devterin.service.impl;
 
-import com.devterin.dtos.dto.ProductImageDTO;
 import com.devterin.dtos.request.ProductRequest;
 import com.devterin.dtos.response.ProductResponse;
 import com.devterin.entity.Category;
 import com.devterin.entity.Product;
-import com.devterin.entity.ProductImage;
 import com.devterin.mapper.ProductMapper;
 import com.devterin.repository.CategoryRepository;
 import com.devterin.repository.ProductImageRepository;
@@ -16,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.InvalidParameterException;
 import java.util.List;
 
 @Service
@@ -27,12 +24,15 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
 
+
+
     @Override
     public List<ProductResponse> getAllProducts() {
         List<Product> products = productRepository.findAll();
 
         return products.stream().map(productMapper::toDto).toList();
     }
+
 
     @Override
     public ProductResponse createProduct(ProductRequest request) {
@@ -51,15 +51,33 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product getProductById(Long productId) {
+    public Product getProductObjById(Long productId) {
 
         return productRepository.findById(productId).orElseThrow(
                 () -> new EntityNotFoundException("Product not exist"));
     }
 
     @Override
+    public ProductResponse getProductById(Long productId) {
+        Product product = getProductObjById(productId);
+
+        int countImage = productImageRepository.countByProductId(productId);
+
+        return ProductResponse.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .description(product.getDescription())
+                .thumbnail(product.getThumbnail())
+                .price(product.getPrice())
+                .category(product.getCategory().getName())
+                .image(countImage)
+                .build();
+    }
+
+
+    @Override
     public ProductResponse updateProduct(Long productId, ProductRequest request) {
-        Product product = getProductById(productId);
+        Product product = getProductObjById(productId);
 
         Category category = categoryRepository.findById(request.getCategoryId()).orElseThrow(
                 () -> new EntityNotFoundException("Categories not exist"));
@@ -76,33 +94,8 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public void deleteProduct(Long productId) {
-        Product product = getProductById(productId);
+        Product product = getProductObjById(productId);
         productRepository.delete(product);
     }
-
-    public ProductImageDTO createProductImage(Long productId, ProductImage productImage) {
-        Product product = getProductById(productId);
-
-        // no more than 5 image per product
-        int size = productImageRepository.findByProductId(productId).size();
-        if (size >= ProductImage.MAXIMUM_IMAGES_PER_PRODUCT) {
-            throw new InvalidParameterException("Number of images has reached limit "
-                    + ProductImage.MAXIMUM_IMAGES_PER_PRODUCT);
-        }
-
-        ProductImage image = ProductImage.builder()
-                .id(productImage.getId())
-                .imageUrl(productImage.getImageUrl())
-                .product(product)
-                .build();
-        ProductImage savedImage = productImageRepository.save(image);
-
-        return ProductImageDTO.builder()
-                .productId(savedImage.getProduct().getId())
-                .imageId(savedImage.getId())
-                .imageUrl(savedImage.getImageUrl())
-                .build();
-    }
-
 
 }

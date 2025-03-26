@@ -1,5 +1,8 @@
 package com.devterin.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,5 +27,6 @@ public class Category extends BaseEntity {
     private String name;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    @JsonBackReference //jsonignore
     private List<Product> products;
 }
