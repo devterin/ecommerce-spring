@@ -60,10 +60,10 @@ public class ProductController {
     }
 
     @DeleteMapping("/{productId}")
-    public ApiResponse<?> deleteProduct(@PathVariable Long productId) {
+    public ApiResponse<Void> deleteProduct(@PathVariable Long productId) {
         productService.deleteProduct(productId);
 
-        return ApiResponse.<ProductResponse>builder()
+        return ApiResponse.<Void>builder()
                 .message("Product deleted")
                 .build();
     }
@@ -88,11 +88,15 @@ public class ProductController {
 
     private String storeFile(MultipartFile file) throws IOException {
         if (!isImageFile(file)) {
-            throw new IOException("Invalid image file");
+            throw new IOException("Invalid image file.");
+        }
+
+        final long MAX_FILE_SIZE = 5 * 1024 * 1024; //5MB
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new IOException("File too large! Maximum allowed size is 5MB.");
         }
 
         Path folder = Paths.get(PATH);
-
         if (!Files.exists(folder)) {
             Files.createDirectories(folder);
         }
@@ -100,8 +104,8 @@ public class ProductController {
         String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
         String newFileName = UUID.randomUUID() + "." + fileName;
 
-        Path pathFileUpload = folder.resolve(newFileName);
-        Files.copy(file.getInputStream(), pathFileUpload, StandardCopyOption.REPLACE_EXISTING);
+//        Path pathFileUpload = folder.resolve(newFileName);
+//        Files.copy(file.getInputStream(), pathFileUpload, StandardCopyOption.REPLACE_EXISTING);
 
         return newFileName;
     }

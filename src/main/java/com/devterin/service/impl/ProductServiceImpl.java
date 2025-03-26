@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.InvalidParameterException;
 import java.util.List;
 
 @Service
@@ -81,6 +82,13 @@ public class ProductServiceImpl implements ProductService {
 
     public ProductImageDTO createProductImage(Long productId, ProductImage productImage) {
         Product product = getProductById(productId);
+
+        // no more than 5 image per product
+        int size = productImageRepository.findByProductId(productId).size();
+        if (size >= ProductImage.MAXIMUM_IMAGES_PER_PRODUCT) {
+            throw new InvalidParameterException("Number of images has reached limit "
+                    + ProductImage.MAXIMUM_IMAGES_PER_PRODUCT);
+        }
 
         ProductImage image = ProductImage.builder()
                 .id(productImage.getId())
