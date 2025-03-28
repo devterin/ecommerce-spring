@@ -10,7 +10,8 @@ import java.util.List;
 
 public interface UserService extends UserDetailsService {
     UserResponse createUser(CreateUserRequest request);
-    List<UserResponse> getUsers();
+    List<UserResponse> getAllUsers();
+    List<UserResponse> getAllUsers(int pageNumber, int pageSize);
     UserResponse updateUser(Long userId, UpdateUserRequest request);
     void deleteUser(Long userId);
     User findByUsername(String username);

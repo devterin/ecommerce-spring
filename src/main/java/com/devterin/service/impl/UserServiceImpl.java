@@ -3,6 +3,7 @@ package com.devterin.service.impl;
 import com.devterin.dtos.request.CreateUserRequest;
 import com.devterin.dtos.request.UpdateUserRequest;
 import com.devterin.dtos.response.UserResponse;
+import com.devterin.entity.Product;
 import com.devterin.entity.Role;
 import com.devterin.entity.User;
 import com.devterin.exception.AppException;
@@ -13,6 +14,9 @@ import com.devterin.repository.UserRepository;
 import com.devterin.service.UserService;
 import com.devterin.utils.TypeUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -53,8 +57,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponse> getUsers() {
+    public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream().map(userMapper::toDTO).toList();
+    }
+    @Override
+    public List<UserResponse> getAllUsers(int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Page<User> page = userRepository.findAll(pageable);
+        List<User> userList = page.getContent();
+
+        return userList.stream().map(userMapper::toDTO).toList();
     }
 
     @Override

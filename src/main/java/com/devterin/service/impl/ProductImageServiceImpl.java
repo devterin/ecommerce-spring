@@ -3,6 +3,7 @@ package com.devterin.service.impl;
 import com.devterin.dtos.dto.ProductImageDTO;
 import com.devterin.entity.Product;
 import com.devterin.entity.ProductImage;
+import com.devterin.mapper.ProductMapper;
 import com.devterin.repository.ProductImageRepository;
 import com.devterin.service.ProductImageService;
 import com.devterin.service.ProductService;
@@ -27,6 +28,7 @@ import java.util.UUID;
 public class ProductImageServiceImpl implements ProductImageService {
     private final ProductImageRepository productImageRepository;
     private final ProductService productService;
+    private final ProductMapper productMapper;
 
     @Value("${upload.image.path}")
     private String PATH;
@@ -52,11 +54,7 @@ public class ProductImageServiceImpl implements ProductImageService {
 
         ProductImage savedImage = productImageRepository.save(productImg);
 
-        return ProductImageDTO.builder()
-                .productId(savedImage.getProduct().getId())
-                .imageId(savedImage.getId())
-                .imageUrl(savedImage.getImageUrl())
-                .build();
+        return productMapper.toDto(savedImage);
     }
 
     @Override
@@ -76,11 +74,7 @@ public class ProductImageServiceImpl implements ProductImageService {
 
         ProductImage updatedImage = productImageRepository.save(existingImage);
 
-        return ProductImageDTO.builder()
-                .productId(updatedImage.getProduct().getId())
-                .imageId(updatedImage.getId())
-                .imageUrl(updatedImage.getImageUrl())
-                .build();
+        return productMapper.toDto(updatedImage);
     }
 
     @Override

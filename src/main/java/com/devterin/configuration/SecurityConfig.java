@@ -45,7 +45,8 @@ public class SecurityConfig {
     private final static String[] WHITE_LIST = {
             "/api/v1/user/**",
             "/api/v1/auth/**",
-            "/api/v1/product/**"
+            "/api/v1/product/**",
+            "/api/v1/attribute/**"
     };
 
     @Bean
@@ -54,9 +55,12 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers(HttpMethod.POST, WHITE_LIST).permitAll()
-                        .requestMatchers("/api/v1/categories/**").hasRole("ADMIN")
-                        .anyRequest().authenticated())
+                                .anyRequest().permitAll()
+
+//                        .requestMatchers(HttpMethod.POST, WHITE_LIST).permitAll()
+//                        .requestMatchers("/api/v1/categories/**").hasRole("ADMIN")
+//                        .anyRequest().authenticated()
+                )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage());

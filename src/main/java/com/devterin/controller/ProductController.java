@@ -26,43 +26,40 @@ public class ProductController {
 
     @PostMapping
     public ApiResponse<ProductResponse> createProduct(@Valid @RequestBody ProductRequest request) {
-        return ApiResponse.<ProductResponse>builder()
-                .message("Product created")
-                .result(productService.createProduct(request))
-                .build();
+        return ApiResponse.<ProductResponse>builder().message("Product created").result(productService.createProduct(request)).build();
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ApiResponse<List<ProductResponse>> getAllProducts() {
-        return ApiResponse.<List<ProductResponse>>builder()
-                .result(productService.getAllProducts())
-                .build();
+    public ApiResponse<List<ProductResponse>> getAllProducts(
+            @RequestParam(name = "pageNumber", defaultValue = "0", required = false) int pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = "10", required = false) int pageSize
+    ) {
+
+        List<ProductResponse> products = productService.getAllProducts(pageNumber, pageSize);
+
+        if (products.isEmpty()) {
+            throw new RuntimeException("Product not found.");
+        }
+
+        return ApiResponse.<List<ProductResponse>>builder().result(productService.getAllProducts(pageNumber, pageSize)).build();
     }
 
     @GetMapping("/{productId}")
     public ApiResponse<ProductResponse> getProductsById(@PathVariable Long productId) {
-        return ApiResponse.<ProductResponse>builder()
-                .result(productService.getProductById(productId))
-                .build();
+        return ApiResponse.<ProductResponse>builder().result(productService.getProductById(productId)).build();
     }
 
     @GetMapping("/productImage/{productId}")
     public ApiResponse<List<ProductImageDTO>> getProductImageByProductId(@PathVariable Long productId) {
 
-        return ApiResponse.<List<ProductImageDTO>>builder()
-                .result(productImageService.getProductImageById(productId))
-                .build();
+        return ApiResponse.<List<ProductImageDTO>>builder().result(productImageService.getProductImageById(productId)).build();
     }
 
 
     @PutMapping("/{productId}")
-    public ApiResponse<ProductResponse> updateProduct(@PathVariable Long productId,
-                                                      @RequestBody ProductRequest request) {
-        return ApiResponse.<ProductResponse>builder()
-                .message("Product updated")
-                .result(productService.updateProduct(productId, request))
-                .build();
+    public ApiResponse<ProductResponse> updateProduct(@PathVariable Long productId, @RequestBody ProductRequest request) {
+        return ApiResponse.<ProductResponse>builder().message("Product updated").result(productService.updateProduct(productId, request)).build();
     }
 
     @DeleteMapping("/{productId}")
@@ -70,37 +67,24 @@ public class ProductController {
 
         productService.deleteProduct(productId);
 
-        return ApiResponse.<Void>builder()
-                .message("Product deleted")
-                .build();
+        return ApiResponse.<Void>builder().message("Product deleted").build();
     }
 
     @PostMapping("/upload/{productId}")
-    public ApiResponse<ProductImageDTO> uploadImage(@PathVariable Long productId,
-                                                    @RequestParam("file") MultipartFile file)
-            throws IOException {
+    public ApiResponse<ProductImageDTO> uploadImage(@PathVariable Long productId, @RequestParam("file") MultipartFile file) throws IOException {
 
         Product product = productService.getProductObjById(productId);
         ProductImageDTO savedImage = productImageService.createProductImage(product.getId(), file);
 
-        return ApiResponse.<ProductImageDTO>builder()
-                .message("Image uploaded successfully")
-                .result(savedImage)
-                .build();
+        return ApiResponse.<ProductImageDTO>builder().message("Image uploaded successfully").result(savedImage).build();
     }
 
     @PutMapping("/update/{productId}/{imageId}")
-    public ApiResponse<ProductImageDTO> updateImage(
-            @PathVariable Long productId,
-            @PathVariable Long imageId,
-            @RequestParam("file") MultipartFile file) throws IOException {
+    public ApiResponse<ProductImageDTO> updateImage(@PathVariable Long productId, @PathVariable Long imageId, @RequestParam("file") MultipartFile file) throws IOException {
 
         ProductImageDTO updatedImage = productImageService.updateProductImage(productId, imageId, file);
 
-        return ApiResponse.<ProductImageDTO>builder()
-                .message("Image updated successfully")
-                .result(updatedImage)
-                .build();
+        return ApiResponse.<ProductImageDTO>builder().message("Image updated successfully").result(updatedImage).build();
     }
 
 

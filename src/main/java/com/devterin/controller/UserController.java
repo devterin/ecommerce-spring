@@ -24,7 +24,7 @@ public class UserController {
 
     @PostMapping
     public ApiResponse<UserResponse> createUser(@Valid @RequestBody(required = false)
-                                                    CreateUserRequest request) {
+                                                CreateUserRequest request) {
 
         return ApiResponse.<UserResponse>builder()
                 .message("Created user successfully.")
@@ -34,14 +34,17 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ApiResponse<List<UserResponse>> getUsers(){
+    public ApiResponse<List<UserResponse>> getAllUsers(
+            @RequestParam(name = "pageNumber", defaultValue = "0", required = false) int pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = "10", required = false) int pageSize
+    ) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         System.out.println("User: " + authentication.getName());
         System.out.println("Roles: " + authentication.getAuthorities());
 
         return ApiResponse.<List<UserResponse>>builder()
                 .message("Success")
-                .result(userService.getUsers())
+                .result(userService.getAllUsers(pageNumber, pageSize))
                 .build();
     }
 
@@ -50,10 +53,10 @@ public class UserController {
                                                 @RequestBody(required = false)
                                                 UpdateUserRequest request) {
 
-    return ApiResponse.<UserResponse>builder()
-            .message("Updated user successfully.")
-            .result(userService.updateUser(userId,request))
-            .build();
+        return ApiResponse.<UserResponse>builder()
+                .message("Updated user successfully.")
+                .result(userService.updateUser(userId, request))
+                .build();
     }
 
     @DeleteMapping("/{userId}")
