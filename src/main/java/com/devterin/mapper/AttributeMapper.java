@@ -37,6 +37,7 @@ public class AttributeMapper {
 
     public VariantResponse toDto(Variant variant) {
         return VariantResponse.builder()
+                .id(variant.getId())
                 .name(variant.getName())
                 .price(variant.getPrice())
                 .quantity(variant.getQuantity())

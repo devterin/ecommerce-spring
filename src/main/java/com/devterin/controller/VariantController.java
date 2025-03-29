@@ -3,8 +3,7 @@ package com.devterin.controller;
 import com.devterin.dtos.request.VariantRequest;
 import com.devterin.dtos.response.ApiResponse;
 import com.devterin.dtos.response.VariantResponse;
-import com.devterin.entity.Variant;
-import com.devterin.service.impl.VariantServiceImpl;
+import com.devterin.service.VariantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +14,7 @@ import java.util.List;
 @RequestMapping("/api/v1/variant")
 public class VariantController {
 
-    private final VariantServiceImpl variantService;
+    private final VariantService variantService;
 
     @PostMapping("/{productId}")
     public ApiResponse<VariantResponse> createVariant(@PathVariable Long productId,

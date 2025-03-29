@@ -19,6 +19,7 @@ public class ApiResponse<T> {
     public static class ErrorDetail {
         private Integer code;
         private String message;
+        private String path;
     }
 
 }

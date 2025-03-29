@@ -26,12 +26,14 @@ public class VariantServiceImpl implements VariantService {
     private final AttributeRepository attributeRepository;
     private final AttributeMapper attributeMapper;
 
+    @Override
     public List<VariantResponse> getAllVariant() {
         List<Variant> list = variantRepository.findAll();
 
         return list.stream().map(attributeMapper::toDto).toList();
     }
 
+    @Override
     public VariantResponse getVariantById(Long variantId) {
         Variant variant = variantRepository.findById(variantId).orElseThrow(
                 () -> new RuntimeException("Variant not found"));
@@ -39,6 +41,7 @@ public class VariantServiceImpl implements VariantService {
         return attributeMapper.toDto(variant);
     }
 
+    @Override
     public VariantResponse createVariant(Long productId, VariantRequest request) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
@@ -69,8 +72,8 @@ public class VariantServiceImpl implements VariantService {
         return attributeMapper.toDto(variantRepository.save(savedVariant));
     }
 
+    @Override
     public VariantResponse updateVariant(Long variantId, VariantRequest request) {
-
         Variant variant = variantRepository.findById(variantId).orElseThrow(
                 () -> new RuntimeException("Variant not found"));
         variant.setPrice(request.getPrice());
@@ -84,6 +87,11 @@ public class VariantServiceImpl implements VariantService {
                 .collect(Collectors
                         .joining(" - ", variant.getProduct().getName() + " - ", ""));
         variant.setName(newName);
+        //check name is duplicate
+        boolean variantExists = variantRepository.existsByNameAndProductId(newName, variant.getProduct().getId());
+        if (variantExists) {
+            throw new IllegalArgumentException("Variant with name '" + newName + "' already exists");
+        }
         Variant updatedVariant = variantRepository.save(variant);
 
         return attributeMapper.toDto(updatedVariant);
@@ -107,6 +115,7 @@ public class VariantServiceImpl implements VariantService {
         return attributes;
     }
 
+    @Override
     public void deleteVariant(Long variantId) {
         Variant variant = variantRepository.findById(variantId).orElseThrow(
                 () -> new RuntimeException("Variant not found"));

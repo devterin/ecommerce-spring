@@ -5,6 +5,7 @@ import com.devterin.entity.AttributeType;
 import com.devterin.mapper.AttributeMapper;
 import com.devterin.repository.AttributeTypeRepository;
 import com.devterin.repository.AttributeRepository;
+import com.devterin.service.AttributeTypeService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,13 +15,12 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-public class AttributeTypeServiceImpl {
+public class AttributeTypeServiceImpl implements AttributeTypeService {
 
     private final AttributeTypeRepository attributeTypeRepository;
-    private AttributeRepository attributeRepository;
     private final AttributeMapper attributeMapper;
 
-
+    @Override
     public AttributeTypeDTO addAttributeType(String value, String description) {
         if (attributeTypeRepository.existsByName(value)) {
             throw new RuntimeException("Attribute Type: " + value + " existed");
@@ -40,6 +40,7 @@ public class AttributeTypeServiceImpl {
         return attributeMapper.toDto(attributeType);
     }
 
+    @Override
     public List<AttributeTypeDTO> getAllAttributeTypes() {
         var list = attributeTypeRepository.findAll();
         return list.stream()
@@ -47,18 +48,20 @@ public class AttributeTypeServiceImpl {
                 .toList();
     }
 
-    public AttributeTypeDTO getAttributeTypeById(Long id) {
-        var attributeType = findAttributeTypeById(id);
+    @Override
+    public AttributeTypeDTO getAttributeTypeById(Long attributeTypeId) {
+        var attributeType = findAttributeTypeById(attributeTypeId);
 
         return attributeMapper.toDto(attributeType);
     }
 
-    public AttributeTypeDTO updateAttributeType(Long id, String value, String description) {
+    @Override
+    public AttributeTypeDTO updateAttributeType(Long attributeTypeId, String value, String description) {
         if (attributeTypeRepository.existsByName(value)) {
             throw new RuntimeException("Attribute Type: " + value + " existed");
         }
 
-        var attributeType = findAttributeTypeById(id);
+        var attributeType = findAttributeTypeById(attributeTypeId);
 
         if (Objects.nonNull(value) && !value.isEmpty()) {
             attributeType.setName(value);
@@ -71,8 +74,9 @@ public class AttributeTypeServiceImpl {
         return attributeMapper.toDto(attributeType);
     }
 
-    public void deleteAttributeType(Long id) {
-        var attributeType = findAttributeTypeById(id);
+    @Override
+    public void deleteAttributeType(Long attributeTypeId) {
+        var attributeType = findAttributeTypeById(attributeTypeId);
 
         attributeTypeRepository.delete(attributeType);
     }

@@ -1,10 +1,10 @@
 package com.devterin.controller;
 
-import com.devterin.dtos.dto.AttributeTypeDTO;
 import com.devterin.dtos.dto.AttributeDTO;
+import com.devterin.dtos.dto.AttributeTypeDTO;
 import com.devterin.dtos.response.ApiResponse;
-import com.devterin.service.impl.AttributeTypeServiceImpl;
-import com.devterin.service.impl.AttributeServiceImpl;
+import com.devterin.service.AttributeService;
+import com.devterin.service.AttributeTypeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,8 +15,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AttributeController {
 
-    private final AttributeTypeServiceImpl attributeTypeService;
-    private final AttributeServiceImpl attributeValueService;
+    private final AttributeService attributeService;
+    private final AttributeTypeService attributeTypeService;
 
     @PostMapping("/type")
     ApiResponse<AttributeTypeDTO> addAttributeType(@RequestBody AttributeTypeDTO request) {
@@ -58,7 +58,7 @@ public class AttributeController {
     ApiResponse<AttributeDTO> addAttribute(@RequestBody AttributeTypeDTO request) {
 
         return ApiResponse.<AttributeDTO>builder()
-                .result(attributeValueService.addAttributeValue(request.getName(),
+                .result(attributeService.addAttributeValue(request.getName(),
                         request.getAttributeTypeId())).build();
     }
 
@@ -72,20 +72,20 @@ public class AttributeController {
     @GetMapping("/value/{attributeTypeId}")
     public ApiResponse<List<AttributeDTO>> getAttributeByTypeId(@PathVariable Long attributeTypeId) {
         return ApiResponse.<List<AttributeDTO>>builder()
-                .result(attributeValueService.findAttributeByTypeId(attributeTypeId)).build();
+                .result(attributeService.findAttributeByTypeId(attributeTypeId)).build();
     }
 
     @PutMapping("/value/{attributeId}")
     public ApiResponse<AttributeDTO> updateAttribute(@PathVariable Long attributeId,
                                                      @RequestBody AttributeDTO request) {
         return ApiResponse.<AttributeDTO>builder()
-                .result(attributeValueService.updateAttributeValue(request.getAttributeType(),
+                .result(attributeService.updateAttributeValue(request.getAttributeType(),
                         attributeId)).build();
     }
 
     @DeleteMapping("/value/{attributeId}")
     public ApiResponse<Void> deleteAttributeById(@PathVariable Long attributeId) {
-        attributeValueService.deleteAttributeValue(attributeId);
+        attributeService.deleteAttributeValue(attributeId);
 
         return ApiResponse.<Void>builder()
                 .message("Attribute Value Deleted").build();
