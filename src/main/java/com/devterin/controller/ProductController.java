@@ -29,7 +29,7 @@ public class ProductController {
         return ApiResponse.<ProductResponse>builder().message("Product created").result(productService.createProduct(request)).build();
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ApiResponse<List<ProductResponse>> getAllProducts(
             @RequestParam(name = "pageNumber", defaultValue = "0", required = false) int pageNumber,

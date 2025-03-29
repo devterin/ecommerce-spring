@@ -13,8 +13,7 @@ public class ProductResponse {
     private Long id;
     private String name;
     private String description;
-    private Long price;
     private String thumbnail;
     private String category;
-    private int image;
+    private Integer image;
 }

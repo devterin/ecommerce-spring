@@ -22,15 +22,13 @@ public class AuthController {
     public ApiResponse<LoginResponse> authenticated(@RequestBody LoginRequest request) {
         return ApiResponse.<LoginResponse>builder()
                 .message("Login successfully")
-                .result(authService.authenticated(request))
-                .build();
+                .result(authService.authenticated(request)).build();
     }
 
     @PostMapping("/introspect")
     public ApiResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest request) {
         return ApiResponse.<IntrospectResponse>builder()
-                .result(authService.introspect(request))
-                .build();
+                .result(authService.introspect(request)).build();
     }
 
     @PostMapping("/refresh-token")
@@ -39,7 +37,6 @@ public class AuthController {
         var result = authService.refreshToken(request.getRefreshToken());
 
         return ApiResponse.<RefreshTokenResponse>builder()
-                .result(result)
-                .build();
+                .result(result).build();
     }
 }

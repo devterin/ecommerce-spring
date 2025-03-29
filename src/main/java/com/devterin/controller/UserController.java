@@ -28,12 +28,11 @@ public class UserController {
 
         return ApiResponse.<UserResponse>builder()
                 .message("Created user successfully.")
-                .result(userService.createUser(request))
-                .build();
+                .result(userService.createUser(request)).build();
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<List<UserResponse>> getAllUsers(
             @RequestParam(name = "pageNumber", defaultValue = "0", required = false) int pageNumber,
             @RequestParam(name = "pageSize", defaultValue = "10", required = false) int pageSize
@@ -44,8 +43,7 @@ public class UserController {
 
         return ApiResponse.<List<UserResponse>>builder()
                 .message("Success")
-                .result(userService.getAllUsers(pageNumber, pageSize))
-                .build();
+                .result(userService.getAllUsers(pageNumber, pageSize)).build();
     }
 
     @PutMapping("/{userId}")
@@ -55,8 +53,7 @@ public class UserController {
 
         return ApiResponse.<UserResponse>builder()
                 .message("Updated user successfully.")
-                .result(userService.updateUser(userId, request))
-                .build();
+                .result(userService.updateUser(userId, request)).build();
     }
 
     @DeleteMapping("/{userId}")
@@ -64,8 +61,7 @@ public class UserController {
         userService.deleteUser(userId);
 
         return ApiResponse.<Void>builder()
-                .message("Deleted user successfully.")
-                .build();
+                .message("Deleted user successfully.").build();
     }
 
 }

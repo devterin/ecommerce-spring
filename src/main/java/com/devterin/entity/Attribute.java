@@ -1,20 +1,17 @@
 package com.devterin.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.List;
 
 @Entity
 @Getter
 @Setter
 @Builder
-@Table(name = "attribute_values")
+@Table(name = "attributes")
 @NoArgsConstructor
 @AllArgsConstructor
-public class AttributeValue extends BaseEntity {
+public class Attribute extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

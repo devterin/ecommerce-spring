@@ -1,11 +1,10 @@
 package com.devterin.controller;
 
 import com.devterin.dtos.dto.AttributeTypeDTO;
-import com.devterin.dtos.dto.AttributeValueDTO;
+import com.devterin.dtos.dto.AttributeDTO;
 import com.devterin.dtos.response.ApiResponse;
 import com.devterin.service.impl.AttributeTypeServiceImpl;
-import com.devterin.service.impl.AttributeValueServiceImpl;
-import lombok.Getter;
+import com.devterin.service.impl.AttributeServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +16,7 @@ import java.util.List;
 public class AttributeController {
 
     private final AttributeTypeServiceImpl attributeTypeService;
-    private final AttributeValueServiceImpl attributeValueService;
+    private final AttributeServiceImpl attributeValueService;
 
     @PostMapping("/type")
     ApiResponse<AttributeTypeDTO> addAttributeType(@RequestBody AttributeTypeDTO request) {
@@ -56,9 +55,9 @@ public class AttributeController {
     }
 
     @PostMapping("/value")
-    ApiResponse<AttributeValueDTO> addAttribute(@RequestBody AttributeTypeDTO request) {
+    ApiResponse<AttributeDTO> addAttribute(@RequestBody AttributeTypeDTO request) {
 
-        return ApiResponse.<AttributeValueDTO>builder()
+        return ApiResponse.<AttributeDTO>builder()
                 .result(attributeValueService.addAttributeValue(request.getName(),
                         request.getAttributeTypeId())).build();
     }
@@ -71,15 +70,15 @@ public class AttributeController {
 //    }
 
     @GetMapping("/value/{attributeTypeId}")
-    public ApiResponse<List<AttributeValueDTO>> getAttributeByTypeId(@PathVariable Long attributeTypeId) {
-        return ApiResponse.<List<AttributeValueDTO>>builder()
+    public ApiResponse<List<AttributeDTO>> getAttributeByTypeId(@PathVariable Long attributeTypeId) {
+        return ApiResponse.<List<AttributeDTO>>builder()
                 .result(attributeValueService.findAttributeByTypeId(attributeTypeId)).build();
     }
 
     @PutMapping("/value/{attributeId}")
-    public ApiResponse<AttributeValueDTO> updateAttribute(@PathVariable Long attributeId,
-                                                          @RequestBody AttributeValueDTO request) {
-        return ApiResponse.<AttributeValueDTO>builder()
+    public ApiResponse<AttributeDTO> updateAttribute(@PathVariable Long attributeId,
+                                                     @RequestBody AttributeDTO request) {
+        return ApiResponse.<AttributeDTO>builder()
                 .result(attributeValueService.updateAttributeValue(request.getAttributeType(),
                         attributeId)).build();
     }

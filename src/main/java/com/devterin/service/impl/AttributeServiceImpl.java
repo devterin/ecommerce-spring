@@ -1,11 +1,11 @@
 package com.devterin.service.impl;
 
-import com.devterin.dtos.dto.AttributeValueDTO;
+import com.devterin.dtos.dto.AttributeDTO;
 import com.devterin.entity.AttributeType;
-import com.devterin.entity.AttributeValue;
+import com.devterin.entity.Attribute;
 import com.devterin.mapper.AttributeMapper;
 import com.devterin.repository.AttributeTypeRepository;
-import com.devterin.repository.AttributeValueRepository;
+import com.devterin.repository.AttributeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,43 +14,43 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class AttributeValueServiceImpl {
-    private final AttributeValueRepository attributeValueRepository;
+public class AttributeServiceImpl {
+    private final AttributeRepository attributeRepository;
     private final AttributeTypeRepository attributeTypeRepository;
     private final AttributeMapper attributeMapper;
 
-    public AttributeValueDTO addAttributeValue(String value, Long attributeTypeId) {
-        if (attributeValueRepository.existsByValue(value)) {
+    public AttributeDTO addAttributeValue(String value, Long attributeTypeId) {
+        if (attributeRepository.existsByValue(value)) {
             throw new RuntimeException("Attribute Value: " + value + " existed");
         }
         AttributeType attributeType = attributeTypeRepository.findById(attributeTypeId).orElseThrow(
                 () -> new EntityNotFoundException("AttributeType not found with id: " + attributeTypeId));
 
-        AttributeValue attributeValue = AttributeValue.builder()
+        Attribute attribute = Attribute.builder()
                 .value(value)
                 .attributeType(attributeType)
                 .build();
 
-        attributeValue = attributeValueRepository.save(attributeValue);
+        attribute = attributeRepository.save(attribute);
 
-        return attributeMapper.toDto(attributeValue);
+        return attributeMapper.toDto(attribute);
     }
 
 
-    public List<AttributeValueDTO> findAttributeByTypeId(Long attributeTypeId) {
-        var attributeValues = attributeValueRepository.findByAttributeTypeId(attributeTypeId);
+    public List<AttributeDTO> findAttributeByTypeId(Long attributeTypeId) {
+        var attributeValues = attributeRepository.findByAttributeTypeId(attributeTypeId);
         return attributeValues.stream().map(attributeMapper::toDto).toList();
     }
 
-    public AttributeValueDTO updateAttributeValue(String value, Long attributeId) {
-        if (attributeValueRepository.existsByValue(value)) {
+    public AttributeDTO updateAttributeValue(String value, Long attributeId) {
+        if (attributeRepository.existsByValue(value)) {
             throw new RuntimeException("Attribute Value: " + value + " existed");
         }
         var attribute = findAttributeValue(attributeId);
 
 
         attribute.setValue(value);
-        attribute = attributeValueRepository.save(attribute);
+        attribute = attributeRepository.save(attribute);
 
         return attributeMapper.toDto(attribute);
     }
@@ -58,11 +58,11 @@ public class AttributeValueServiceImpl {
     public void deleteAttributeValue(Long attributeId) {
         var attribute = findAttributeValue(attributeId);
 
-        attributeValueRepository.delete(attribute);
+        attributeRepository.delete(attribute);
     }
 
-    private AttributeValue findAttributeValue(Long attributeId) {
-        return attributeValueRepository.findById(attributeId).orElseThrow(
+    private Attribute findAttributeValue(Long attributeId) {
+        return attributeRepository.findById(attributeId).orElseThrow(
                 () -> new EntityNotFoundException("AttributeType not found with id: " + attributeId));
     }
 

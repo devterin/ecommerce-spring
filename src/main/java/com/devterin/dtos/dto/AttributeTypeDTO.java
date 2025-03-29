@@ -1,6 +1,5 @@
 package com.devterin.dtos.dto;
 
-import com.devterin.entity.AttributeValue;
 import lombok.Builder;
 import lombok.Data;
 

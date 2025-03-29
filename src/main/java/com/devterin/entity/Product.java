@@ -1,5 +1,6 @@
 package com.devterin.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,9 +24,6 @@ public class Product extends BaseEntity {
 
     @Column(name = "description")
     private String description;
-
-    @Column(name = "price")
-    private Long price;
 
     @Column(name = "thumbnail", columnDefinition = "TEXT")
     private String thumbnail;

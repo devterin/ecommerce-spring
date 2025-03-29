@@ -19,16 +19,14 @@ public class CategoryController {
     public ApiResponse<List<CategoryDTO>> getAllCategories() {
 
         return ApiResponse.<List<CategoryDTO>>builder()
-                .result(categoryService.getAllCategories())
-                .build();
+                .result(categoryService.getAllCategories()).build();
     }
 
     @GetMapping("/{categoryId}")
     public ApiResponse<Category> getCategoryById(@PathVariable Long categoryId) {
 
         return ApiResponse.<Category>builder()
-                .result(categoryService.getCategoryById(categoryId))
-                .build();
+                .result(categoryService.getCategoryById(categoryId)).build();
 
     }
 
@@ -37,18 +35,16 @@ public class CategoryController {
 
         return ApiResponse.<CategoryDTO>builder()
                 .message("Category created")
-                .result(categoryService.createCategories(request))
-                .build();
+                .result(categoryService.createCategories(request)).build();
     }
 
     @PutMapping("/{categoryId}")
     public ApiResponse<CategoryDTO> updateCategory(@PathVariable Long categoryId,
-                                                @RequestBody Category request) {
+                                                   @RequestBody Category request) {
 
         return ApiResponse.<CategoryDTO>builder()
                 .message("Category updated")
-                .result(categoryService.updateCategory(categoryId, request))
-                .build();
+                .result(categoryService.updateCategory(categoryId, request)).build();
     }
 
     @DeleteMapping("/{categoryId}")
@@ -56,7 +52,6 @@ public class CategoryController {
         categoryService.deleteCategory(categoryId);
 
         return ApiResponse.<Category>builder()
-                .message("Category deleted")
-                .build();
+                .message("Category deleted").build();
     }
 }

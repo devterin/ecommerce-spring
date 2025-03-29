@@ -1,11 +1,10 @@
 package com.devterin.service.impl;
 
 import com.devterin.dtos.dto.AttributeTypeDTO;
-import com.devterin.dtos.dto.AttributeValueDTO;
 import com.devterin.entity.AttributeType;
 import com.devterin.mapper.AttributeMapper;
 import com.devterin.repository.AttributeTypeRepository;
-import com.devterin.repository.AttributeValueRepository;
+import com.devterin.repository.AttributeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,7 +17,7 @@ import java.util.Objects;
 public class AttributeTypeServiceImpl {
 
     private final AttributeTypeRepository attributeTypeRepository;
-    private AttributeValueRepository attributeValueRepository;
+    private AttributeRepository attributeRepository;
     private final AttributeMapper attributeMapper;
 
 

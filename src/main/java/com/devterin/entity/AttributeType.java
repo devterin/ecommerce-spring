@@ -3,7 +3,6 @@ package com.devterin.entity;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.List;
 
@@ -26,5 +25,5 @@ public class AttributeType extends BaseEntity {
 
     @OneToMany(mappedBy = "attributeType", cascade = CascadeType.ALL)
     @JsonManagedReference
-    private List<AttributeValue> attributeValues;
+    private List<Attribute> attributes;
 }

@@ -12,17 +12,19 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "product_variants")
+@Table(name = "variants")
 public class Variant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String name;
+
     @Column(name = "price")
-    private int price;
+    private Integer price;
 
     @Column(name = "quantity")
-    private int quantity;
+    private Integer quantity;
 
     @ManyToOne
     @JoinColumn(name = "product_id")
@@ -32,6 +34,6 @@ public class Variant {
     @JoinTable(name = "variant_attribute",
             joinColumns = @JoinColumn(name = "variant_id"),
             inverseJoinColumns = @JoinColumn(name = "attribute_id"))
-    private List<AttributeValue> attributeValues = new ArrayList<>();
+    private List<Attribute> attributes = new ArrayList<>();
 
 }

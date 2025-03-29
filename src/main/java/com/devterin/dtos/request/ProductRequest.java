@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 public class ProductRequest {
     private String name;
     private String description;
-    private Long price;
     private String thumbnail;
     private Long categoryId;
 }

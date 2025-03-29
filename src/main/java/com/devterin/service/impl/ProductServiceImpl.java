@@ -55,7 +55,6 @@ public class ProductServiceImpl implements ProductService {
                 .name(request.getName())
                 .thumbnail(request.getThumbnail())
                 .description(request.getDescription())
-                .price(request.getPrice())
                 .category(category)
                 .build();
 
@@ -80,7 +79,6 @@ public class ProductServiceImpl implements ProductService {
                 .name(product.getName())
                 .description(product.getDescription())
                 .thumbnail(product.getThumbnail())
-                .price(product.getPrice())
                 .category(product.getCategory().getName())
                 .image(countImage)
                 .build();
@@ -97,7 +95,6 @@ public class ProductServiceImpl implements ProductService {
         product.setName(request.getName());
         product.setThumbnail(request.getThumbnail());
         product.setDescription(request.getDescription());
-        product.setPrice(request.getPrice());
         product.setCategory(category);
 
         return productMapper.toDto(productRepository.save(product));
