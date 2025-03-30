@@ -4,16 +4,17 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Entity
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
 @Builder
+@Entity
 @Table(name = "attributes")
-@NoArgsConstructor
-@AllArgsConstructor
 public class Attribute extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "attribute_id")
     private Long id;
 
     private String value;

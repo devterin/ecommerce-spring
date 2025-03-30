@@ -4,9 +4,9 @@ import com.devterin.dtos.dto.ProductImageDTO;
 import com.devterin.dtos.response.ProductResponse;
 import com.devterin.entity.Product;
 import com.devterin.entity.ProductImage;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class ProductMapper {
     public ProductResponse toDto(Product product) {
         return ProductResponse.builder()

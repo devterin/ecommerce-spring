@@ -6,16 +6,17 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@Setter
-@Getter
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
+@Builder
 @Entity
 @Table(name = "variants")
-public class Variant {
+public class Variant extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "variant_id")
     private Long id;
 
     private String name;
@@ -24,7 +25,7 @@ public class Variant {
     private Integer price;
 
     @Column(name = "quantity")
-    private Integer quantity;
+    private Integer stockQuantity;
 
     @ManyToOne
     @JoinColumn(name = "product_id")

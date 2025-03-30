@@ -1,16 +1,14 @@
 package com.devterin.mapper;
 
-import com.devterin.dtos.dto.AttributeTypeDTO;
 import com.devterin.dtos.dto.AttributeDTO;
+import com.devterin.dtos.dto.AttributeTypeDTO;
 import com.devterin.dtos.response.VariantResponse;
-import com.devterin.entity.AttributeType;
 import com.devterin.entity.Attribute;
+import com.devterin.entity.AttributeType;
 import com.devterin.entity.Variant;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-import javax.swing.text.Caret;
-
-@Service
+@Component
 public class AttributeMapper {
     public AttributeTypeDTO toDto(AttributeType attributeType) {
         return AttributeTypeDTO.builder()
@@ -40,7 +38,7 @@ public class AttributeMapper {
                 .id(variant.getId())
                 .name(variant.getName())
                 .price(variant.getPrice())
-                .quantity(variant.getQuantity())
+                .quantity(variant.getStockQuantity())
                 .attribute(variant.getAttributes().stream().map(Attribute::getValue).toList())
                 .build();
     }

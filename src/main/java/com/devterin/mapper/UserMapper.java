@@ -4,9 +4,9 @@ import com.devterin.dtos.request.CreateUserRequest;
 import com.devterin.dtos.response.UserResponse;
 import com.devterin.entity.User;
 import com.devterin.utils.TypeGender;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class UserMapper {
     public UserResponse toDTO(User user) {
         return UserResponse.builder()

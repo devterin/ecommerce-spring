@@ -9,7 +9,6 @@ import com.devterin.mapper.AttributeMapper;
 import com.devterin.repository.AttributeRepository;
 import com.devterin.repository.ProductRepository;
 import com.devterin.repository.VariantRepository;
-import com.devterin.service.ProductService;
 import com.devterin.service.VariantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -64,7 +63,7 @@ public class VariantServiceImpl implements VariantService {
         Variant savedVariant = Variant.builder()
                 .name(variantName)
                 .price(request.getPrice())
-                .quantity(request.getQuantity())
+                .stockQuantity(request.getQuantity())
                 .product(product)
                 .attributes(attributes)
                 .build();
@@ -77,7 +76,7 @@ public class VariantServiceImpl implements VariantService {
         Variant variant = variantRepository.findById(variantId).orElseThrow(
                 () -> new RuntimeException("Variant not found"));
         variant.setPrice(request.getPrice());
-        variant.setQuantity(request.getQuantity());
+        variant.setStockQuantity(request.getQuantity());
         // valid attribute and check only value attribute type
         List<Attribute> attributes = validateAndGetAttributes(request.getAttributeIds());
         variant.setAttributes(attributes);

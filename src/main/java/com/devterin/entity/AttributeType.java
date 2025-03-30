@@ -6,17 +6,18 @@ import lombok.*;
 
 import java.util.List;
 
-@Entity
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
 @Builder
+@Entity
 @Table(name = "attribute_types")
-@NoArgsConstructor
-@AllArgsConstructor
 public class AttributeType extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "attribute_type_id")
     private Long id;
 
     private String name;
