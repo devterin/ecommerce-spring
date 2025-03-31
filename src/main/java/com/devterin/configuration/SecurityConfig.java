@@ -39,14 +39,11 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final UserDetailsService userDetailsService;
-    //    private final PasswordEncoder passwordEncoder;
     private final JwtTokenFilter jwtTokenFilter;
 
     private final static String[] WHITE_LIST = {
             "/api/v1/user/**",
             "/api/v1/auth/**",
-            "/api/v1/product/**",
-            "/api/v1/attribute/**"
     };
 
     @Bean
@@ -55,11 +52,11 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
-                                .anyRequest().permitAll()
+//                                .anyRequest().permitAll()
 
-//                        .requestMatchers(HttpMethod.POST, WHITE_LIST).permitAll()
-//                        .requestMatchers("/api/v1/categories/**").hasRole("ADMIN")
-//                        .anyRequest().authenticated()
+                        .requestMatchers(HttpMethod.POST, WHITE_LIST).permitAll()
+                        .requestMatchers("/api/v1/categories/**").hasRole("ADMIN")
+                        .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> {
