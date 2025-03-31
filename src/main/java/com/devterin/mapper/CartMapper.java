@@ -22,6 +22,7 @@ public class CartMapper {
                         .build()).toList();
 
         return CartResponse.builder()
+                .userId(cart.getUser().getId())
                 .cartId(cart.getId())
                 .totalPrice(cart.getTotalPrice())
                 .items(cartItem)
