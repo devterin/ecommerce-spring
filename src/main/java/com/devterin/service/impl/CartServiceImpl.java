@@ -30,7 +30,7 @@ public class CartServiceImpl implements CartService {
     private final UserRepository userRepository;
     private final VariantRepository variantRepository;
     private final CartMapper cartMapper;
-
+    @Override
     public List<CartResponse> getAllCarts() {
         log.info("Fetching all carts");
         List<Cart> carts = cartRepository.findAll();
@@ -38,13 +38,11 @@ public class CartServiceImpl implements CartService {
         return carts.stream().map(cartMapper::toDto).toList();
     }
 
-    public CartResponse getCartById(Long userId, Long cartId) {
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new EntityNotFoundException("User not found with id: " + userId));
-        log.info("Fetching cart with id: {} for userId: {}", cartId, user.getId());
-
-        Cart cart = cartRepository.findById(cartId).orElseThrow(
-                () -> new EntityNotFoundException("Cart not found with id: " + cartId));
+    @Override
+    public CartResponse getCartById(Long userId) {
+        Cart cart = cartRepository.findByUserId(userId).orElseThrow(
+                () -> new EntityNotFoundException("Cart not found for user id: " + userId));
+        log.info("Fetching cart with for userId: {}", userId);
         // check xem giỏ hàng có thuộc về user này không
         if (!cart.getUser().getId().equals(userId)) {
             throw new RuntimeException("Cart does not belong to the user");

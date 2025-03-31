@@ -34,13 +34,12 @@ public class CartController {
                 .build();
     }
 
-    @GetMapping("/{cartId}")
-    public ApiResponse<CartResponse> getCartById(@PathVariable Long cartId,
-                                                 @AuthenticationPrincipal CustomUserDetails userDetails) {
+    @GetMapping("/myCart")
+    public ApiResponse<CartResponse> getCartById(@AuthenticationPrincipal CustomUserDetails userDetails) {
         Long userId = userDetails.getId();
 
         return ApiResponse.<CartResponse>builder()
-                .result(cartService.getCartById(userId, cartId))
+                .result(cartService.getCartById(userId))
                 .build();
     }
 
