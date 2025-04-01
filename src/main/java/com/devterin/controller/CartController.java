@@ -1,20 +1,18 @@
 package com.devterin.controller;
 
 import com.devterin.dtos.request.CartRequest;
-import com.devterin.dtos.response.CartResponse;
 import com.devterin.dtos.response.ApiResponse;
-import com.devterin.entity.Cart;
+import com.devterin.dtos.response.CartResponse;
 import com.devterin.security.CustomUserDetails;
 import com.devterin.service.impl.CartServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.file.attribute.UserPrincipal;
 import java.util.List;
 
 @Slf4j
@@ -35,14 +33,13 @@ public class CartController {
     }
 
     @GetMapping("/myCart")
-    public ApiResponse<CartResponse> getCartById(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ApiResponse<CartResponse> getMyCart(@AuthenticationPrincipal CustomUserDetails userDetails) {
         Long userId = userDetails.getId();
 
         return ApiResponse.<CartResponse>builder()
-                .result(cartService.getCartById(userId))
+                .result(cartService.getCartByUserId(userId))
                 .build();
     }
-
 
     @PostMapping
     public ApiResponse<CartResponse> addProductToCart(@RequestBody CartRequest request,

@@ -49,6 +49,7 @@ public class User extends BaseEntity implements UserDetails {
     private Boolean active;
 
     @Column(name = "gender")
+    @Enumerated(EnumType.STRING)
     private TypeGender gender;
 
     @Column(name = "dob")

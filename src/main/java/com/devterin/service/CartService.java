@@ -10,6 +10,6 @@ public interface CartService {
     CartResponse addProductToCart(Long userId, CartRequest request);
     CartResponse updateCartItem(Long userId, CartRequest request);
     CartResponse removeProductFromCart(Long userId, Long variantId);
-    CartResponse getCartById(Long userId);
+    CartResponse getCartByUserId(Long userId);
 
 }

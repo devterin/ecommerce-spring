@@ -2,6 +2,7 @@ package com.devterin.service.impl;
 
 import com.devterin.dtos.request.CreateUserRequest;
 import com.devterin.dtos.request.UpdateUserRequest;
+import com.devterin.dtos.response.ApiResponse;
 import com.devterin.dtos.response.UserResponse;
 import com.devterin.entity.Product;
 import com.devterin.entity.Role;
@@ -17,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -53,6 +56,17 @@ public class UserServiceImpl implements UserService {
         user.setRoles(Set.of(roles));
         user.setActive(true);
         user = userRepository.save(user);
+
+        return userMapper.toDTO(user);
+    }
+
+    @Override
+    public UserResponse getMyInfo() {
+        SecurityContext context = SecurityContextHolder.getContext();
+        String name = context.getAuthentication().getName();
+
+        User user = userRepository.findByUsername(name).orElseThrow(
+                () -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         return userMapper.toDTO(user);
     }

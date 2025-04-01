@@ -46,6 +46,15 @@ public class UserController {
                 .result(userService.getAllUsers(pageNumber, pageSize)).build();
     }
 
+    @GetMapping("/myInfo")
+    public ApiResponse<UserResponse> getMyInfo() {
+
+        return ApiResponse.<UserResponse>builder()
+                .message("Personal information")
+                .result(userService.getMyInfo())
+                .build();
+    }
+
     @PutMapping("/{userId}")
     public ApiResponse<UserResponse> updateUser(@PathVariable Long userId,
                                                 @RequestBody(required = false)
