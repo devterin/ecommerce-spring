@@ -15,5 +15,5 @@ public interface OrderService {
     OrderResponse updateOrderStatus(Long orderId, OrderStatus newStatus);
     OrderResponse updateOrderDetails(Long orderId, Long userId, OrderRequest request);
     OrderResponse cancelOrder(Long orderId, Long userId);
-    OrderResponse confirmOrderDeliveryByCOD(Long orderId);
+    OrderResponse confirmOrderDeliveryByCOD(Long orderId,Long userId);
 }

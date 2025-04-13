@@ -99,5 +99,15 @@ public class OrderController {
                 .build();
     }
 
+    @PostMapping("/user/confirm/{orderId}")
+    public ApiResponse<OrderResponse> confirmOrder(@PathVariable Long orderId,
+                                                   @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        Long userId = userDetails.getId();
+        return ApiResponse.<OrderResponse>builder()
+                .result(orderService.confirmOrderDeliveryByCOD(orderId, userId))
+                .build();
+    }
+
 
 }

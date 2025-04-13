@@ -188,10 +188,14 @@ public class OrderServiceImpl implements OrderService {
     }
     @Override
     @Transactional
-    public OrderResponse confirmOrderDeliveryByCOD(Long orderId) {
+    public OrderResponse confirmOrderDeliveryByCOD(Long orderId, Long userId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found"));
 
+        // check roles
+        if (!order.getUser().getId().equals(userId)) {
+            throw new SecurityException("You do not have permission to confirm this order");
+        }
         if (order.getOrderStatus() != OrderStatus.SHIPPED) {
             throw new IllegalStateException("Order is not in SHIPPED status. Cannot confirm delivery.");
         }
