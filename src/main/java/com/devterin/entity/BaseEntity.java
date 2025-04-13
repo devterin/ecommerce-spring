@@ -28,11 +28,11 @@ import java.util.Base64;
 public class BaseEntity implements Serializable {
 
     @CreatedDate
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "created_at", updatable = false, columnDefinition = "DATETIME(2)")
     private LocalDateTime createdAt;
 
     @LastModifiedDate
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", columnDefinition = "DATETIME(2)")
     private LocalDateTime updatedAt;
 
 }

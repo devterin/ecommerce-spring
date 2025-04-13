@@ -1,6 +1,8 @@
 package com.devterin.security;
 
 import com.devterin.entity.User;
+import com.devterin.exception.AppException;
+import com.devterin.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -9,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.expression.ParseException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -39,7 +42,7 @@ public class JwtTokenUtil {
     private long REFRESH_EXPIRATION;
 
     // decode and get the key
-    private SecretKey getSecretKey(String key) {
+    public SecretKey getSecretKey(String key) {
         byte[] keyBytes = Decoders.BASE64.decode(key);
         if (key == null || key.isEmpty()) {
             throw new IllegalArgumentException("Secret key cannot be null or empty");
@@ -122,17 +125,18 @@ public class JwtTokenUtil {
         return extractClaim(token, Claims::getExpiration);
     }
 
+
     public boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
-    public String verifyRefreshToken(String token) {
+    public Claims verifyRefreshToken(String token) {
         return Jwts.parser()
                 .verifyWith(getSecretKey(REFRESH_KEY))
                 .build()
                 .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
+                .getPayload();
+//                .getSubject();
     }
 
 }

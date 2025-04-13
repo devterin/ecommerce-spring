@@ -24,8 +24,11 @@ public class Variant extends BaseEntity{
     @Column(name = "price")
     private Integer price;
 
-    @Column(name = "quantity")
+    @Column(name = "stock_quantity")
     private Integer stockQuantity;
+
+    @Column(name = "sold_quantity", columnDefinition = "INT DEFAULT 0")
+    private Integer soldQuantity;
 
     @ManyToOne
     @JoinColumn(name = "product_id")

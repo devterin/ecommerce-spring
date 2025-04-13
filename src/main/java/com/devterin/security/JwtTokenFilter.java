@@ -2,8 +2,10 @@ package com.devterin.security;
 
 import com.devterin.dtos.response.ApiResponse;
 import com.devterin.exception.ErrorCode;
+import com.devterin.service.impl.RedisServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +31,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private final JwtTokenUtil jwtTokenUtil;
     private final CustomUserDetailsService customUserDetailsService;
     private final ObjectMapper objectMapper;
+    private final RedisServiceImpl redisService;
 
 
     @Override
@@ -39,17 +42,17 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         log.info("-----JWT_AUTHENTICATION_REQUEST-----");
 
         String authHeader = request.getHeader("Authorization");
+
         String token;
         String username;
-
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
-
             return;
         }
 
         try {
             token = authHeader.substring(7);
+            if (redisService.isTokenBlacklisted(token)) throw new JwtException("Invalid token");
             username = jwtTokenUtil.extractUsername(token);
         } catch (ExpiredJwtException ex) {
             ErrorCode errorCode = ErrorCode.TOKEN_EXPIRED;
@@ -76,9 +79,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails, null, userDetails.getAuthorities());
-
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
