@@ -10,8 +10,10 @@ import com.devterin.exception.ErrorCode;
 import com.devterin.mapper.UserMapper;
 import com.devterin.repository.RoleRepository;
 import com.devterin.repository.UserRepository;
+import com.devterin.service.CloudinaryService;
 import com.devterin.service.UserService;
 import com.devterin.enums.TypeUser;
+import com.devterin.ultil.AppConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,6 +22,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Set;
@@ -32,10 +35,10 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final CloudinaryService cloudinaryService;
 
     @Override
-    public UserResponse createUser(CreateUserRequest request) {
-
+    public UserResponse createUser(CreateUserRequest request, MultipartFile file) {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new AppException(ErrorCode.USER_EXISTED);
         }
@@ -46,9 +49,12 @@ public class UserServiceImpl implements UserService {
                     .build();
             roleRepository.save(roles);
         }
+        String avatarUrl = (file != null && !file.isEmpty())
+                ? cloudinaryService.uploadImage(file, AppConstants.AVATAR) : AppConstants.URL_DEFAULT_AVATAR;
 
         User user = userMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setAvatar(avatarUrl);
         user.setRoles(Set.of(roles));
         user.setActive(true);
         user = userRepository.save(user);
@@ -82,14 +88,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse updateUser(Long userId, UpdateUserRequest request) {
-
+    public UserResponse updateUser(Long userId, UpdateUserRequest request, MultipartFile file) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        String avatarUrl = (file != null && !file.isEmpty())
+                ? cloudinaryService.uploadImage(file, AppConstants.AVATAR) : AppConstants.URL_DEFAULT_AVATAR;
 
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
+        user.setAvatar(avatarUrl);
         user.setDob(request.getDob());
         user.setAddress(request.getAddress());
         user.setPhoneNumber(request.getPhoneNumber());

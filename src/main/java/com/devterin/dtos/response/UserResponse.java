@@ -17,6 +17,7 @@ public class UserResponse {
     private String username;
     private String fullName;
     private String email;
+    private String avatarUrl;
     private TypeGender typeGender;
     private LocalDate dob;
     private String phoneNumber;

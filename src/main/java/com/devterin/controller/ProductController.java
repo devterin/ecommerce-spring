@@ -74,7 +74,8 @@ public class ProductController {
     }
 
     @PostMapping("/upload/{productId}")
-    public ApiResponse<List<ProductImageDTO>> uploadImage(@PathVariable Long productId, @RequestParam("file") List<MultipartFile> file) {
+    public ApiResponse<List<ProductImageDTO>> uploadImage(@PathVariable Long productId,
+                                                          @RequestParam("file") List<MultipartFile> file) {
 
         Product product = productService.getProductObjById(productId);
         List<ProductImageDTO> savedImage = productImageService.createProductImage(product.getId(), file);
@@ -83,7 +84,9 @@ public class ProductController {
     }
 
     @PutMapping("/update/{productId}/{imageId}")
-    public ApiResponse<ProductImageDTO> updateImage(@PathVariable Long productId, @PathVariable Long imageId, @RequestParam("file") MultipartFile file) {
+    public ApiResponse<ProductImageDTO> updateImage(@PathVariable Long productId,
+                                                    @PathVariable Long imageId,
+                                                    @RequestParam("file") MultipartFile file) {
 
         ProductImageDTO updatedImage = productImageService.updateProductImage(productId, imageId, file);
 

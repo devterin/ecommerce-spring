@@ -45,6 +45,10 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "password")
     private String password;
 
+
+    @Column(name = "avatar")
+    private String avatar;
+
     @Column(name = "is_active")
     private Boolean active;
 

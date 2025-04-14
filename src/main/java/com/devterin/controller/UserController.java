@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -23,12 +24,12 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ApiResponse<UserResponse> createUser(@Valid @RequestBody(required = false)
-                                                CreateUserRequest request) {
+    public ApiResponse<UserResponse> createUser(@RequestPart(value = "avatar", required = false) MultipartFile file,
+                                                @Valid @RequestPart("request") CreateUserRequest request) {
 
         return ApiResponse.<UserResponse>builder()
                 .message("Created user successfully.")
-                .result(userService.createUser(request)).build();
+                .result(userService.createUser(request, file)).build();
     }
 
     @GetMapping
@@ -56,12 +57,13 @@ public class UserController {
 
     @PutMapping("/{userId}")
     public ApiResponse<UserResponse> updateUser(@PathVariable Long userId,
-                                                @RequestBody(required = false)
-                                                UpdateUserRequest request) {
+                                                @RequestPart("request") UpdateUserRequest request,
+                                                @RequestPart(value = "avatar", required = false) MultipartFile file) {
+
 
         return ApiResponse.<UserResponse>builder()
                 .message("Updated user successfully.")
-                .result(userService.updateUser(userId, request)).build();
+                .result(userService.updateUser(userId, request, file)).build();
     }
 
     @DeleteMapping("/{userId}")

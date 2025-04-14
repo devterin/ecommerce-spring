@@ -4,6 +4,7 @@ import com.devterin.dtos.request.CreateUserRequest;
 import com.devterin.dtos.response.UserResponse;
 import com.devterin.entity.User;
 import com.devterin.enums.TypeGender;
+import com.devterin.ultil.AppConstants;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,6 +15,7 @@ public class UserMapper {
                 .username(user.getUsername())
                 .fullName(user.getFullName())
                 .email(user.getEmail())
+                .avatarUrl(user.getAvatar() != null ? user.getAvatar() : AppConstants.URL_DEFAULT_AVATAR)
                 .typeGender(user.getGender())
                 .dob(user.getDob())
                 .phoneNumber(user.getPhoneNumber())
