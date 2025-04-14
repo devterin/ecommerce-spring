@@ -1,6 +1,6 @@
 package com.devterin.dtos.response;
 
-import com.devterin.utils.TypeGender;
+import com.devterin.enums.TypeGender;
 import lombok.Builder;
 import lombok.Data;
 import lombok.*;

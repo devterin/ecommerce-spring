@@ -5,8 +5,10 @@ import com.devterin.entity.Product;
 import com.devterin.entity.ProductImage;
 import com.devterin.mapper.ProductMapper;
 import com.devterin.repository.ProductImageRepository;
+import com.devterin.service.CloudinaryService;
 import com.devterin.service.ProductImageService;
 import com.devterin.service.ProductService;
+import com.devterin.ultil.AppConstants;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -29,48 +32,48 @@ public class ProductImageServiceImpl implements ProductImageService {
     private final ProductImageRepository productImageRepository;
     private final ProductService productService;
     private final ProductMapper productMapper;
-
-    @Value("${upload.image.path}")
-    private String PATH;
+    private final CloudinaryService cloudinaryService;
 
 
     @Override
-    public ProductImageDTO createProductImage(Long productId, MultipartFile file)
-            throws IOException {
+    public List<ProductImageDTO> createProductImage(Long productId, List<MultipartFile> files) {
         Product product = productService.getProductObjById(productId);
         // no more than 5 image per product
-        int size = productImageRepository.findByProductId(productId).size();
-        if (size >= ProductImage.MAXIMUM_IMAGES_PER_PRODUCT) {
+        int imageCount = productImageRepository.findByProductId(productId).size();
+        int newImageCount = files.size();
+        int totalImages = imageCount + newImageCount;
+
+
+        if (totalImages > ProductImage.MAXIMUM_IMAGES_PER_PRODUCT) {
             throw new InvalidParameterException("Number of images has reached limit "
                     + ProductImage.MAXIMUM_IMAGES_PER_PRODUCT);
         }
+        List<ProductImage> productImages = new ArrayList<>();
 
-        String image = storeFile(file);
+        for (MultipartFile multipartFile : files) {
+            String images = cloudinaryService.uploadImage(multipartFile, AppConstants.PRODUCT_IMAGE);
+            ProductImage productImg = ProductImage.builder()
+                    .imageUrl(images)
+                    .product(product)
+                    .build();
+            productImages.add(productImg);
+        }
 
-        ProductImage productImg = ProductImage.builder()
-                .imageUrl(image)
-                .product(product)
-                .build();
+        List<ProductImage> savedImages = productImageRepository.saveAll(productImages);
 
-        ProductImage savedImage = productImageRepository.save(productImg);
-
-        return productMapper.toDto(savedImage);
+        return savedImages.stream().map(productMapper::toDto).toList();
     }
 
     @Override
-    public ProductImageDTO updateProductImage(Long productId, Long imageId, MultipartFile file)
-            throws IOException {
+    public ProductImageDTO updateProductImage(Long productId, Long imageId, MultipartFile file) {
 
         productService.getProductObjById(productId);
 
         ProductImage existingImage = productImageRepository.findById(imageId)
                 .orElseThrow(() -> new EntityNotFoundException("Image not found"));
 
-//        delete image old
-//        deleteFile(existingImage.getImageUrl());
-
-        String image = storeFile(file);
-        existingImage.setImageUrl(image);
+        String newImageUrl = cloudinaryService.uploadImage(file, AppConstants.PRODUCT_IMAGE);
+        existingImage.setImageUrl(newImageUrl);
 
         ProductImage updatedImage = productImageRepository.save(existingImage);
 
@@ -92,44 +95,5 @@ public class ProductImageServiceImpl implements ProductImageService {
                 .build()).toList();
     }
 
-
-    private void deleteFile(String imageUrl) {
-        Path imagePath = Paths.get(PATH).resolve(imageUrl);
-        try {
-            Files.deleteIfExists(imagePath);
-        } catch (IOException exception) {
-            throw new RuntimeException("Failed to delete old image: " + imageUrl, exception);
-        }
-    }
-
-    @Override
-    public String storeFile(MultipartFile file) throws IOException {
-        if (!isImageFile(file)) {
-            throw new IOException("Invalid image file.");
-        }
-
-        final long MAX_FILE_SIZE = 5 * 1024 * 1024; //5MB
-        if (file.getSize() > MAX_FILE_SIZE) {
-            throw new IOException("File too large! Maximum allowed size is 5MB.");
-        }
-
-        Path folder = Paths.get(PATH);
-        if (!Files.exists(folder)) {
-            Files.createDirectories(folder);
-        }
-
-        String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
-        String newFileName = UUID.randomUUID() + "-" + fileName;
-
-//        Path pathFileUpload = folder.resolve(newFileName);
-//        Files.copy(file.getInputStream(), pathFileUpload, StandardCopyOption.REPLACE_EXISTING);
-
-        return newFileName;
-    }
-
-    private boolean isImageFile(MultipartFile file) {
-        String contentType = file.getContentType();
-        return contentType.startsWith("image/");
-    }
 
 }

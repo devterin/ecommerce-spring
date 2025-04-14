@@ -1,6 +1,6 @@
 package com.devterin.entity;
 
-import com.devterin.utils.OrderStatus;
+import com.devterin.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
 

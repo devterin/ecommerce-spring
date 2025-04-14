@@ -5,9 +5,8 @@ import com.devterin.dtos.response.ApiResponse;
 import com.devterin.dtos.response.OrderResponse;
 import com.devterin.security.CustomUserDetails;
 import com.devterin.service.impl.OrderServiceImpl;
-import com.devterin.utils.OrderStatus;
+import com.devterin.enums.OrderStatus;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,8 +34,7 @@ public class OrderController {
             @RequestParam(name = "pageSize", defaultValue = "10", required = false) int pageSize) {
 
         return ApiResponse.<List<OrderResponse>>builder()
-                .result(orderService.getAllOrders(pageNumber, pageSize))
-                .build();
+                .result(orderService.getAllOrders(pageNumber, pageSize)).build();
     }
 
     @PostMapping
@@ -47,8 +45,7 @@ public class OrderController {
 
         return ApiResponse.<OrderResponse>builder()
                 .message("Created order")
-                .result(orderService.createOrder(userId, request))
-                .build();
+                .result(orderService.createOrder(userId, request)).build();
     }
 
     @PatchMapping("/{orderId}")
@@ -56,8 +53,7 @@ public class OrderController {
                                                         @RequestParam("status") String status) {
 
         return ApiResponse.<OrderResponse>builder()
-                .result(orderService.updateOrderStatus(orderId, OrderStatus.valueOf(status)))
-                .build();
+                .result(orderService.updateOrderStatus(orderId, OrderStatus.valueOf(status))).build();
     }
 
     @GetMapping("/user")
@@ -95,8 +91,7 @@ public class OrderController {
                                                          @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         return ApiResponse.<OrderResponse>builder()
-                .result(orderService.updateOrderDetails(orderId, userDetails.getId(), request))
-                .build();
+                .result(orderService.updateOrderDetails(orderId, userDetails.getId(), request)).build();
     }
 
     @PostMapping("/user/confirm/{orderId}")
@@ -105,8 +100,7 @@ public class OrderController {
 
         Long userId = userDetails.getId();
         return ApiResponse.<OrderResponse>builder()
-                .result(orderService.confirmOrderDeliveryByCOD(orderId, userId))
-                .build();
+                .result(orderService.confirmOrderDeliveryByCOD(orderId, userId)).build();
     }
 
 

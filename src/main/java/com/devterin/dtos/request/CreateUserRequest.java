@@ -1,6 +1,6 @@
 package com.devterin.dtos.request;
 
-import com.devterin.utils.TypeGender;
+import com.devterin.enums.TypeGender;
 import com.devterin.validator.gender.GenderSubSet;
 import com.devterin.validator.phone.Phone;
 import com.fasterxml.jackson.annotation.JsonFormat;

@@ -2,7 +2,7 @@ package com.devterin.service;
 
 import com.devterin.dtos.request.OrderRequest;
 import com.devterin.dtos.response.OrderResponse;
-import com.devterin.utils.OrderStatus;
+import com.devterin.enums.OrderStatus;
 
 import java.util.List;
 

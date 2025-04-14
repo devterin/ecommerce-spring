@@ -13,7 +13,7 @@ import com.devterin.repository.CouponUsageRepository;
 import com.devterin.repository.OrderRepository;
 import com.devterin.repository.UserRepository;
 import com.devterin.service.CouponService;
-import com.devterin.utils.DiscountType;
+import com.devterin.enums.DiscountType;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

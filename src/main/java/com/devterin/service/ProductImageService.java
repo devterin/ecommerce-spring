@@ -13,9 +13,9 @@ import java.util.List;
 public interface ProductImageService {
 
     List<ProductImageDTO> getProductImageById(Long productId);
-    ProductImageDTO createProductImage(Long productId, MultipartFile file) throws IOException;
-    ProductImageDTO updateProductImage(Long productId, Long imageId, MultipartFile file) throws IOException;
-    String storeFile(MultipartFile file) throws IOException;
+    List<ProductImageDTO> createProductImage(Long productId, List<MultipartFile> file);
+    ProductImageDTO updateProductImage(Long productId, Long imageId, MultipartFile file);
+
 
 
 }

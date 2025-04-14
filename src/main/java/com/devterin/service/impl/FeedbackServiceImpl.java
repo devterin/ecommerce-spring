@@ -10,7 +10,7 @@ import com.devterin.repository.FeedbackRepository;
 import com.devterin.repository.OrderRepository;
 import com.devterin.repository.UserRepository;
 import com.devterin.service.FeedbackService;
-import com.devterin.utils.OrderStatus;
+import com.devterin.enums.OrderStatus;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

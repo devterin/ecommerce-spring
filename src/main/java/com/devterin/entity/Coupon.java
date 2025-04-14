@@ -1,11 +1,10 @@
 package com.devterin.entity;
 
-import com.devterin.utils.DiscountType;
+import com.devterin.enums.DiscountType;
 import jakarta.persistence.*;
 import lombok.*;
 
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @AllArgsConstructor

@@ -1,6 +1,6 @@
 package com.devterin.entity;
 
-import com.devterin.utils.TypeGender;
+import com.devterin.enums.TypeGender;
 import jakarta.persistence.*;
 
 import lombok.*;

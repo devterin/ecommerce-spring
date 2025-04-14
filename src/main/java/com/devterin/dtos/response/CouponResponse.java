@@ -1,10 +1,9 @@
 package com.devterin.dtos.response;
 
-import com.devterin.utils.DiscountType;
+import com.devterin.enums.DiscountType;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data

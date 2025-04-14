@@ -25,11 +25,12 @@ public class ProductController {
     private final ProductImageService productImageService;
 
     @PostMapping
-    public ApiResponse<ProductResponse> createProduct(@Valid @RequestBody ProductRequest request) {
-        return ApiResponse.<ProductResponse>builder().message("Product created").result(productService.createProduct(request)).build();
+    public ApiResponse<ProductResponse> createProduct(@RequestPart("request") @Valid ProductRequest request,
+                                                      @RequestPart("thumbnail") MultipartFile thumbnail) {
+        return ApiResponse.<ProductResponse>builder().message("Product created").result(productService.createProduct(request, thumbnail)).build();
     }
 
-//    @PreAuthorize("hasRole('ADMIN')")
+    //    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ApiResponse<List<ProductResponse>> getAllProducts(
             @RequestParam(name = "pageNumber", defaultValue = "0", required = false) int pageNumber,
@@ -58,8 +59,10 @@ public class ProductController {
 
 
     @PutMapping("/{productId}")
-    public ApiResponse<ProductResponse> updateProduct(@PathVariable Long productId, @RequestBody ProductRequest request) {
-        return ApiResponse.<ProductResponse>builder().message("Product updated").result(productService.updateProduct(productId, request)).build();
+    public ApiResponse<ProductResponse> updateProduct(@PathVariable Long productId,
+                                                      @RequestPart ProductRequest request,
+                                                      @RequestPart("thumbnail") MultipartFile thumbnail) {
+        return ApiResponse.<ProductResponse>builder().message("Product updated").result(productService.updateProduct(productId, request, thumbnail)).build();
     }
 
     @DeleteMapping("/{productId}")
@@ -71,16 +74,16 @@ public class ProductController {
     }
 
     @PostMapping("/upload/{productId}")
-    public ApiResponse<ProductImageDTO> uploadImage(@PathVariable Long productId, @RequestParam("file") MultipartFile file) throws IOException {
+    public ApiResponse<List<ProductImageDTO>> uploadImage(@PathVariable Long productId, @RequestParam("file") List<MultipartFile> file) {
 
         Product product = productService.getProductObjById(productId);
-        ProductImageDTO savedImage = productImageService.createProductImage(product.getId(), file);
+        List<ProductImageDTO> savedImage = productImageService.createProductImage(product.getId(), file);
 
-        return ApiResponse.<ProductImageDTO>builder().message("Image uploaded successfully").result(savedImage).build();
+        return ApiResponse.<List<ProductImageDTO>>builder().message("Image uploaded successfully").result(savedImage).build();
     }
 
     @PutMapping("/update/{productId}/{imageId}")
-    public ApiResponse<ProductImageDTO> updateImage(@PathVariable Long productId, @PathVariable Long imageId, @RequestParam("file") MultipartFile file) throws IOException {
+    public ApiResponse<ProductImageDTO> updateImage(@PathVariable Long productId, @PathVariable Long imageId, @RequestParam("file") MultipartFile file) {
 
         ProductImageDTO updatedImage = productImageService.updateProductImage(productId, imageId, file);
 

@@ -1,4 +1,4 @@
-package com.devterin.utils;
+package com.devterin.enums;
 
 public enum PaymentStatus {
     PENDING, //Thanh toán đang chờ xử lý

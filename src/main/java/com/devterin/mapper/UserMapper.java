@@ -3,7 +3,7 @@ package com.devterin.mapper;
 import com.devterin.dtos.request.CreateUserRequest;
 import com.devterin.dtos.response.UserResponse;
 import com.devterin.entity.User;
-import com.devterin.utils.TypeGender;
+import com.devterin.enums.TypeGender;
 import org.springframework.stereotype.Component;
 
 @Component

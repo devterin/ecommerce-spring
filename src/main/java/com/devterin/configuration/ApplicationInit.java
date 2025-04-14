@@ -4,7 +4,7 @@ import com.devterin.entity.Role;
 import com.devterin.entity.User;
 import com.devterin.repository.RoleRepository;
 import com.devterin.repository.UserRepository;
-import com.devterin.utils.TypeUser;
+import com.devterin.enums.TypeUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationRunner;

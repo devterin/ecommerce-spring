@@ -8,6 +8,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @RestControllerAdvice
 @Slf4j
@@ -28,6 +29,20 @@ public class GlobalHandlerException {
                         .build())
                 .build();
 
+        return ResponseEntity.status(errorCode.getStatusCode()).body(apiResponse);
+    }
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<?>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException ex) {
+        ErrorCode errorCode = ErrorCode.FILE_SIZE;
+
+        log.error("File upload failed: {}", ex.getMessage());
+        ApiResponse<?> apiResponse = ApiResponse.builder()
+                .success(false)
+                .error(ApiResponse.ErrorDetail.builder()
+                        .code(errorCode.getCode())
+                        .message(errorCode.getMessage())
+                        .build())
+                .build();
         return ResponseEntity.status(errorCode.getStatusCode()).body(apiResponse);
     }
 

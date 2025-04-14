@@ -1,12 +1,9 @@
 package com.devterin.entity;
 
-import com.devterin.utils.PaymentMethod;
-import com.devterin.utils.PaymentStatus;
+import com.devterin.enums.PaymentMethod;
+import com.devterin.enums.PaymentStatus;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import lombok.*;
-
-import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor

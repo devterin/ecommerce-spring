@@ -11,10 +11,10 @@ import java.io.IOException;
 import java.util.List;
 
 public interface ProductService {
-    ProductResponse createProduct(ProductRequest request);
+    ProductResponse createProduct(ProductRequest request, MultipartFile file);
     List<ProductResponse> getAllProducts();
     List<ProductResponse> getAllProducts(int pageNumber, int pageSize);
-    ProductResponse updateProduct(Long productId, ProductRequest request);
+    ProductResponse updateProduct(Long productId, ProductRequest request,MultipartFile file);
     void deleteProduct(Long productId);
     ProductResponse getProductById(Long productId);
     Product getProductObjById(Long productId);

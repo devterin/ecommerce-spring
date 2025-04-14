@@ -2,7 +2,6 @@ package com.devterin.dtos.response;
 
 import com.devterin.dtos.dto.OrderItemDTO;
 import com.devterin.dtos.dto.PaymentDTO;
-import com.devterin.utils.OrderStatus;
 import lombok.Builder;
 import lombok.Data;
 

@@ -1,4 +1,4 @@
-package com.devterin.utils;
+package com.devterin.enums;
 
 public enum TypeUser {
     USER,

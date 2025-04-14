@@ -1,13 +1,11 @@
 package com.devterin.dtos.request;
 
-import com.devterin.utils.DiscountType;
+import com.devterin.enums.DiscountType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.*;
-import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data

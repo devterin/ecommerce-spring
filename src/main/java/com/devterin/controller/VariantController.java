@@ -20,30 +20,26 @@ public class VariantController {
     public ApiResponse<VariantResponse> createVariant(@PathVariable Long productId,
                                                       @RequestBody VariantRequest request) {
         return ApiResponse.<VariantResponse>builder()
-                .result(variantService.createVariant(productId, request))
-                .build();
+                .result(variantService.createVariant(productId, request)).build();
     }
 
     @GetMapping
     public ApiResponse<List<VariantResponse>> getAllVariant() {
         return ApiResponse.<List<VariantResponse>>builder()
-                .result(variantService.getAllVariant())
-                .build();
+                .result(variantService.getAllVariant()).build();
     }
 
     @GetMapping("/{variantId}")
     public ApiResponse<VariantResponse> getAllVariant(@PathVariable Long variantId) {
         return ApiResponse.<VariantResponse>builder()
-                .result(variantService.getVariantById(variantId))
-                .build();
+                .result(variantService.getVariantById(variantId)).build();
     }
 
     @PutMapping("/{variantId}")
     public ApiResponse<VariantResponse> updateVariant(@PathVariable Long variantId,
                                                       @RequestBody VariantRequest request) {
         return ApiResponse.<VariantResponse>builder()
-                .result(variantService.updateVariant(variantId, request))
-                .build();
+                .result(variantService.updateVariant(variantId, request)).build();
     }
 
     @DeleteMapping("/{variantId}")
@@ -51,8 +47,7 @@ public class VariantController {
         variantService.deleteVariant(variantId);
 
         return ApiResponse.<Void>builder()
-                .message("Variant deleted")
-                .build();
+                .message("Variant deleted").build();
     }
 
 
