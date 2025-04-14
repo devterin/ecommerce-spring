@@ -42,11 +42,19 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "payment_id")
     private Payment payment;
 
+    private Integer shippingFee;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems = new ArrayList<>();
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<Feedback> feedbacks = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "coupon_id")
+    private Coupon coupon;
+
+    private Integer discountAmount; // Số tiền được giảm
 
 
 

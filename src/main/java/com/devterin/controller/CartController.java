@@ -78,4 +78,13 @@ public class CartController {
                 .build();
     }
 
+    @DeleteMapping
+    public ApiResponse<Void> clearCart(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userId = userDetails.getId();
+        cartService.clearCart(userId);
+        return ApiResponse.<Void>builder()
+                .message("Cart cleared")
+                .build();
+    }
+
 }

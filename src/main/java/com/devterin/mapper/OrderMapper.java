@@ -40,7 +40,11 @@ public class OrderMapper {
                 .userEmail(order.getUser().getEmail())
                 .orderStatus(order.getOrderStatus().name())
                 .orderDate(order.getOrderDate())
+                .shippingFee(order.getShippingFee() != null ? order.getShippingFee() : 0)
                 .totalAmount(order.getTotalAmount())
+                .coupon(order.getCoupon().getCode() != null ? order.getCoupon().getCode() : null)
+                .discountAmount(order.getDiscountAmount())
+                .finalAmount(order.getTotalAmount() - order.getDiscountAmount())
                 .items(items)
                 .payment(payment)
                 .build();

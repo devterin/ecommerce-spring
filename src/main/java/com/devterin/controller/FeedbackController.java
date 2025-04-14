@@ -4,7 +4,7 @@ import com.devterin.dtos.request.FeedbackRequest;
 import com.devterin.dtos.response.ApiResponse;
 import com.devterin.dtos.response.FeedbackResponse;
 import com.devterin.security.CustomUserDetails;
-import com.devterin.service.impl.FeedbackServiceImpl;
+import com.devterin.service.FeedbackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/feedback")
 public class FeedbackController {
 
-    private final FeedbackServiceImpl feedbackService;
+    private final FeedbackService feedbackService;
 
     @PostMapping("/{orderId}")
     ApiResponse<FeedbackResponse> feedback(@RequestBody FeedbackRequest request,

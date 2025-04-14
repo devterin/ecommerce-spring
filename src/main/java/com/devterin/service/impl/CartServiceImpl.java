@@ -30,6 +30,7 @@ public class CartServiceImpl implements CartService {
     private final UserRepository userRepository;
     private final VariantRepository variantRepository;
     private final CartMapper cartMapper;
+
     @Override
     public List<CartResponse> getAllCarts() {
         log.info("Fetching all carts");
@@ -109,6 +110,18 @@ public class CartServiceImpl implements CartService {
         cartRepository.save(cart);
 
         return cartMapper.toDto(cart);
+    }
+
+    @Override
+    public void clearCart(Long userId) {
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Cart not found for user id: " + userId));
+
+        cartItemRepository.deleteAll(cart.getCartItems());
+
+        cart.getCartItems().clear();
+        cart.setTotalPrice(0);
+        cartRepository.save(cart);
     }
 
     private Cart findOrCreateCart(Long userId) {

@@ -16,7 +16,12 @@ public class OrderResponse {
     private String userEmail;
     private String orderStatus;
     private LocalDate orderDate;
-    private Integer totalAmount;
+    private Integer shippingFee;
+    private Integer totalAmount; // original price
+    private String coupon;
+    private Integer discountAmount;
+    private Integer finalAmount;
     private List<OrderItemDTO> items; // list sản phẩm trong đơn hàng
     private PaymentDTO payment;
+
 }

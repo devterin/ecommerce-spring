@@ -13,6 +13,7 @@ import com.devterin.utils.PaymentMethod;
 import com.devterin.utils.PaymentStatus;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,14 +25,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
+    private static final int SHIPPING_FEE = 15000; // Phí ship mặc định
+    private static final int FREE_SHIPPING_THRESHOLD = 150000; // Ngưỡng freeship
 
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final CartRepository cartRepository;
     private final PaymentRepository paymentRepository;
     private final VariantRepository variantRepository;
+    private final CouponServiceImpl couponService;
     private final OrderMapper orderMapper;
 
 
@@ -98,8 +103,21 @@ public class OrderServiceImpl implements OrderService {
                 .address(request.getAddress())
                 .build();
 
+        // áp mã coupon nếu có
+        if (request.getCouponCode() != null && !request.getCouponCode().trim().isEmpty()) {
+            log.info("Applying coupon code: {}", request.getCouponCode());
+            couponService.applyCoupon(request.getCouponCode(), userId, order);
+        } else {
+            log.info("No coupon code provided, proceeding without discount");
+            order.setDiscountAmount(0);
+        }
+        // Tính phí ship
+        int shippingFee = order.getTotalAmount() > FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
+        order.setShippingFee(shippingFee);
+
+        int totalAmountPayment = Math.max(0, (order.getTotalAmount() - order.getDiscountAmount()) + shippingFee);
         Payment payment = Payment.builder()
-                .amount(order.getTotalAmount())
+                .amount(totalAmountPayment)
                 .paymentMethod(PaymentMethod.valueOf(request.getPaymentMethod()))
                 .paymentStatus(PaymentStatus.PENDING)
                 .order(order)
@@ -127,6 +145,7 @@ public class OrderServiceImpl implements OrderService {
 
         return orderMapper.toDto(order);
     }
+
 
     @Override
     @Transactional
@@ -186,6 +205,7 @@ public class OrderServiceImpl implements OrderService {
 
         return orderMapper.toDto(order);
     }
+
     @Override
     @Transactional
     public OrderResponse confirmOrderDeliveryByCOD(Long orderId, Long userId) {

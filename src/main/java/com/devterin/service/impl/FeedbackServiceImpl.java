@@ -9,23 +9,23 @@ import com.devterin.mapper.FeedbackMapper;
 import com.devterin.repository.FeedbackRepository;
 import com.devterin.repository.OrderRepository;
 import com.devterin.repository.UserRepository;
+import com.devterin.service.FeedbackService;
 import com.devterin.utils.OrderStatus;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class FeedbackServiceImpl {
+public class FeedbackServiceImpl implements FeedbackService {
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
     private final FeedbackRepository feedbackRepository;
     private final FeedbackMapper feedbackMapper;
 
-    @Transactional
+    @Override
     public FeedbackResponse createFeedback(Long userId, Long orderId, FeedbackRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -55,6 +55,7 @@ public class FeedbackServiceImpl {
         return feedbackMapper.toDto(savedFeedback);
     }
 
+    @Override
     public FeedbackResponse updateFeedback(Long userId, Long orderId, FeedbackRequest request) {
 
         Feedback feedback = feedbackRepository.findByOrderIdAndUserId(orderId, userId);
