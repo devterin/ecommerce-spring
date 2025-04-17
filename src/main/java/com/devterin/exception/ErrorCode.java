@@ -28,8 +28,11 @@ public enum ErrorCode {
     FILE_SIZE(116, "File size exceeds limit of 5MB", HttpStatus.BAD_REQUEST), //401
     REQUEST_SIZE(117, "Request size exceeds limit of 20MB", HttpStatus.BAD_REQUEST),
     PRODUCT_NOT_FOUND(118, "Product not found", HttpStatus.BAD_REQUEST),
+    VARIANT_NOT_FOUND(119, "Variant not found", HttpStatus.BAD_REQUEST),
+    INSUFFICIENT_QUANTITY(120, "Insufficient quantity", HttpStatus.BAD_REQUEST),
+    INVALID_TIME_RANGE(120, "Invalid time range", HttpStatus.BAD_REQUEST),
 
-    ;
+    FLASH_SALE_NOT_FOUND(121, "Flash sale not found" ,HttpStatus.BAD_REQUEST );
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

@@ -1,5 +1,7 @@
 package com.devterin.service;
 
+import com.devterin.dtos.request.OrderFlashSaleRequest;
+import com.devterin.dtos.request.PurchaseFlashSaleItemRequest;
 import com.devterin.dtos.request.OrderRequest;
 import com.devterin.dtos.response.OrderResponse;
 import com.devterin.enums.OrderStatus;
@@ -12,6 +14,7 @@ public interface OrderService {
     List<OrderResponse> getOrderByUserId(Long userId);
     OrderResponse getOrderUserByOrderId(Long orderId, Long userId);
     OrderResponse createOrder(Long userId, OrderRequest request);
+    OrderResponse createFlashSaleOrder(Long userId, OrderRequest request);
     OrderResponse updateOrderStatus(Long orderId, OrderStatus newStatus);
     OrderResponse updateOrderDetails(Long orderId, Long userId, OrderRequest request);
     OrderResponse cancelOrder(Long orderId, Long userId);

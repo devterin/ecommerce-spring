@@ -10,7 +10,7 @@ import lombok.*;
 @Setter
 @Builder
 public class ProductImageDTO {
-    private Long productId;
+    private Long variantId;
     private Long imageId;
     private String imageUrl;
 }

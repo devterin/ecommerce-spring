@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+
 @Component
 public class OrderMapper {
 
@@ -42,7 +43,7 @@ public class OrderMapper {
                 .orderDate(order.getOrderDate())
                 .shippingFee(order.getShippingFee() != null ? order.getShippingFee() : 0)
                 .totalAmount(order.getTotalAmount())
-                .coupon(order.getCoupon().getCode() != null ? order.getCoupon().getCode() : null)
+                .coupon(order.getCoupon() != null ? order.getCoupon().getCode() : null)
                 .discountAmount(order.getDiscountAmount())
                 .finalAmount(order.getTotalAmount() - order.getDiscountAmount())
                 .items(items)

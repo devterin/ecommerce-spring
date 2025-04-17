@@ -3,8 +3,10 @@ package com.devterin.service.impl;
 import com.devterin.dtos.dto.ProductImageDTO;
 import com.devterin.entity.Product;
 import com.devterin.entity.ProductImage;
+import com.devterin.entity.Variant;
 import com.devterin.mapper.ProductMapper;
 import com.devterin.repository.ProductImageRepository;
+import com.devterin.repository.VariantRepository;
 import com.devterin.service.CloudinaryService;
 import com.devterin.service.ProductImageService;
 import com.devterin.service.ProductService;
@@ -33,13 +35,15 @@ public class ProductImageServiceImpl implements ProductImageService {
     private final ProductService productService;
     private final ProductMapper productMapper;
     private final CloudinaryService cloudinaryService;
+    private final VariantRepository variantRepository;
 
 
     @Override
-    public List<ProductImageDTO> createProductImage(Long productId, List<MultipartFile> files) {
-        Product product = productService.getProductObjById(productId);
+    public List<ProductImageDTO> createProductImage(Long variantId, List<MultipartFile> files) {
+        Variant variant = variantRepository.findById(variantId).orElseThrow(
+                () -> new EntityNotFoundException("Variant not found"));
         // no more than 5 image per product
-        int imageCount = productImageRepository.findByProductId(productId).size();
+        int imageCount = productImageRepository.findByVariantId(variantId).size();
         int newImageCount = files.size();
         int totalImages = imageCount + newImageCount;
 
@@ -54,8 +58,7 @@ public class ProductImageServiceImpl implements ProductImageService {
             String images = cloudinaryService.uploadImage(multipartFile, AppConstants.PRODUCT_IMAGE);
             ProductImage productImg = ProductImage.builder()
                     .imageUrl(images)
-                    .product(product)
-                    .build();
+                    .variant(variant).build();
             productImages.add(productImg);
         }
 
@@ -65,9 +68,10 @@ public class ProductImageServiceImpl implements ProductImageService {
     }
 
     @Override
-    public ProductImageDTO updateProductImage(Long productId, Long imageId, MultipartFile file) {
+    public ProductImageDTO updateProductImage(Long variantId, Long imageId, MultipartFile file) {
 
-        productService.getProductObjById(productId);
+        variantRepository.findById(variantId).orElseThrow(
+                () -> new EntityNotFoundException("Variant not found"));
 
         ProductImage existingImage = productImageRepository.findById(imageId)
                 .orElseThrow(() -> new EntityNotFoundException("Image not found"));
@@ -81,15 +85,15 @@ public class ProductImageServiceImpl implements ProductImageService {
     }
 
     @Override
-    public List<ProductImageDTO> getProductImageById(Long productId) {
-        List<ProductImage> productImages = productImageRepository.findByProductId(productId);
+    public List<ProductImageDTO> getProductImageById(Long variantId) {
+        List<ProductImage> productImages = productImageRepository.findByVariantId(variantId);
 
         if (productImages.isEmpty()) {
-            throw new RuntimeException("Product not exist");
+            throw new RuntimeException("Variant not exist");
         }
 
         return productImages.stream().map(image -> ProductImageDTO.builder()
-                .productId(productId)
+                .variantId(variantId)
                 .imageId(image.getId())
                 .imageUrl(image.getImageUrl())
                 .build()).toList();

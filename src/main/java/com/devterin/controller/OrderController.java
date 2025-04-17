@@ -4,8 +4,8 @@ import com.devterin.dtos.request.OrderRequest;
 import com.devterin.dtos.response.ApiResponse;
 import com.devterin.dtos.response.OrderResponse;
 import com.devterin.security.CustomUserDetails;
-import com.devterin.service.impl.OrderServiceImpl;
 import com.devterin.enums.OrderStatus;
+import com.devterin.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderController {
 
-    private final OrderServiceImpl orderService;
+    private final OrderService orderService;
 
     @GetMapping("/{orderId}")
     public ApiResponse<OrderResponse> getOrderById(@PathVariable Long orderId) {

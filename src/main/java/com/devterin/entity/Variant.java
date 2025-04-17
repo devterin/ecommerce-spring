@@ -34,6 +34,9 @@ public class Variant extends BaseEntity{
     @JoinColumn(name = "product_id")
     private Product product;
 
+    @OneToMany(mappedBy = "variant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductImage> images = new ArrayList<>();
+
     @ManyToMany
     @JoinTable(name = "variant_attribute",
             joinColumns = @JoinColumn(name = "variant_id"),

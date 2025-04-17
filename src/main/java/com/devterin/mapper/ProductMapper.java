@@ -15,13 +15,12 @@ public class ProductMapper {
                 .category(product.getCategory().getName())
                 .description(product.getDescription())
                 .thumbnail(product.getThumbnail())
-                .image(product.getImages() != null ? product.getImages().size() : 0)
                 .build();
     }
 
     public ProductImageDTO toDto(ProductImage productImage) {
         return ProductImageDTO.builder()
-                .productId(productImage.getProduct().getId())
+                .variantId(productImage.getVariant().getId())
                 .imageId(productImage.getId())
                 .imageUrl(productImage.getImageUrl())
                 .build();

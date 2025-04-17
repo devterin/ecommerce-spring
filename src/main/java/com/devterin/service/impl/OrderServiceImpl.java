@@ -3,14 +3,16 @@ package com.devterin.service.impl;
 import com.devterin.dtos.request.OrderRequest;
 import com.devterin.dtos.response.OrderResponse;
 import com.devterin.entity.*;
+import com.devterin.enums.OrderStatus;
+import com.devterin.enums.PaymentMethod;
+import com.devterin.enums.PaymentStatus;
 import com.devterin.exception.AppException;
 import com.devterin.exception.ErrorCode;
 import com.devterin.mapper.OrderMapper;
 import com.devterin.repository.*;
+import com.devterin.service.CouponService;
 import com.devterin.service.OrderService;
-import com.devterin.enums.OrderStatus;
-import com.devterin.enums.PaymentMethod;
-import com.devterin.enums.PaymentStatus;
+import com.devterin.ultil.AppConstants;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,16 +30,15 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
-    private static final int SHIPPING_FEE = 15000; // Phí ship mặc định
-    private static final int FREE_SHIPPING_THRESHOLD = 150000; // Ngưỡng freeship
-
     private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
     private final UserRepository userRepository;
     private final CartRepository cartRepository;
-    private final PaymentRepository paymentRepository;
     private final VariantRepository variantRepository;
-    private final CouponServiceImpl couponService;
+    private final FlashSaleItemRepository flashSaleItemRepository;
+    private final CouponService couponService;
     private final OrderMapper orderMapper;
+    private final PaymentRepository paymentRepository;
 
 
     @Override
@@ -54,6 +55,7 @@ public class OrderServiceImpl implements OrderService {
         List<Order> list = orderRepository.findAll(pageable).getContent();
         return list.stream().map(orderMapper::toDto).collect(Collectors.toList());
     }
+
 
     @Override
     public List<OrderResponse> getOrderByUserId(Long userId) {
@@ -94,27 +96,108 @@ public class OrderServiceImpl implements OrderService {
         }
         List<Variant> checkAndUpdateStock = checkAndUpdateStock(cart.getCartItems());
 
+        Order order = buildOrder(user, cart.getTotalPrice(), request);
+        Order savedOrder = orderRepository.save(order);
+        variantRepository.saveAll(checkAndUpdateStock);
+
+
+        List<OrderItem> orderItems = buildCartOrderItems(order, cart.getCartItems());
+        savedOrder.setOrderItems(orderItems);
+        orderRepository.save(savedOrder);
+        cartRepository.delete(cart);
+
+        return orderMapper.toDto(order);
+    }
+
+
+    @Override
+    @Transactional
+    public OrderResponse createFlashSaleOrder(Long userId, OrderRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException(ErrorCode.USER_NOT_FOUND.getMessage()));
+
+        FlashSaleItem flashSaleItem = flashSaleItemRepository.findById(request.getFlashSaleItemId())
+                .orElseThrow(() -> new IllegalArgumentException("FlashSale Item not found"));
+
+        // Validate quantity
+        int availableQuantity = flashSaleItem.getQuantity() - flashSaleItem.getSoldQuantity();
+        if (availableQuantity < request.getFlashSaleQuantity()) {
+            throw new IllegalArgumentException(ErrorCode.INSUFFICIENT_QUANTITY.getMessage());
+        }
+
+        Variant variant = flashSaleItem.getVariant();
+        if (variant.getStockQuantity() < request.getFlashSaleQuantity()) {
+            throw new IllegalArgumentException(ErrorCode.INSUFFICIENT_QUANTITY.getMessage());
+        }
+        int totalAmount = variant.getPrice() * request.getFlashSaleQuantity();
+        Order order = buildOrder(user, totalAmount, request);
+        List<OrderItem> orderItems = List.of(buildFlashSaleOrderItem(order, flashSaleItem, request));
+
+        Order savedOrder = orderRepository.save(order);
+        savedOrder.setOrderItems(orderItems);
+
+        orderItemRepository.saveAll(orderItems);
+        // Update quantities
+        flashSaleItem.setSoldQuantity(flashSaleItem.getSoldQuantity() + request.getFlashSaleQuantity());
+        variant.setStockQuantity(variant.getStockQuantity() - request.getFlashSaleQuantity());
+        variant.setSoldQuantity((variant.getSoldQuantity() + request.getFlashSaleQuantity()));
+
+        flashSaleItemRepository.save(flashSaleItem);
+        variantRepository.save(variant);
+
+        return orderMapper.toDto(savedOrder);
+    }
+
+    private OrderItem buildFlashSaleOrderItem(Order order, FlashSaleItem flashSaleItem, OrderRequest request) {
+        return OrderItem.builder()
+                .order(order)
+                .variant(flashSaleItem.getVariant())
+                .flashSaleItem(flashSaleItem)
+                .quantity(request.getFlashSaleQuantity())
+                .unitPrice(flashSaleItem.getSalePrice())
+                .totalPrice(flashSaleItem.getSalePrice() * request.getFlashSaleQuantity())
+                .build();
+    }
+
+    private List<OrderItem> buildCartOrderItems(Order order, List<CartItem> cartItems) {
+        List<OrderItem> orderItems = new ArrayList<>();
+        for (CartItem cartItem : cartItems) {
+            orderItems.add(OrderItem.builder()
+                    .order(order)
+                    .variant(cartItem.getVariant())
+                    .quantity(cartItem.getQuantity())
+                    .unitPrice(cartItem.getUnitPrice())
+                    .totalPrice(cartItem.getTotalPrice())
+                    .build());
+        }
+        return orderItems;
+    }
+
+
+    private Order buildOrder(User user, Integer totalAmount, OrderRequest request) {
         Order order = Order.builder()
                 .user(user)
-                .totalAmount(cart.getTotalPrice())
+                .totalAmount(totalAmount)
                 .orderDate(LocalDate.now())
                 .orderStatus(OrderStatus.PENDING)
                 .note(request.getNote())
                 .address(request.getAddress())
                 .build();
 
-        // áp mã coupon nếu có
+        // Apply coupon
         if (request.getCouponCode() != null && !request.getCouponCode().trim().isEmpty()) {
             log.info("Applying coupon code: {}", request.getCouponCode());
-            couponService.applyCoupon(request.getCouponCode(), userId, order);
+            couponService.applyCoupon(request.getCouponCode(), user.getId(), order);
         } else {
             log.info("No coupon code provided, proceeding without discount");
             order.setDiscountAmount(0);
         }
-        // Tính phí ship
-        int shippingFee = order.getTotalAmount() > FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
+
+        // Calculate shipping fee
+        int shippingFee = order.getTotalAmount() > AppConstants.FREE_SHIPPING_THRESHOLD ? 0 : AppConstants.SHIPPING_FEE;
         order.setShippingFee(shippingFee);
 
+        // Create payment
         int totalAmountPayment = Math.max(0, (order.getTotalAmount() - order.getDiscountAmount()) + shippingFee);
         Payment payment = Payment.builder()
                 .amount(totalAmountPayment)
@@ -124,26 +207,7 @@ public class OrderServiceImpl implements OrderService {
                 .build();
         order.setPayment(payment);
 
-        Order savedOrder = orderRepository.save(order);
-        variantRepository.saveAll(checkAndUpdateStock);
-
-        List<OrderItem> orderItems = new ArrayList<>();
-        for (CartItem cartItem : cart.getCartItems()) {
-            OrderItem orderItem = OrderItem.builder()
-                    .order(savedOrder)
-                    .variant(cartItem.getVariant())
-                    .quantity(cartItem.getQuantity())
-                    .unitPrice(cartItem.getUnitPrice())
-                    .totalPrice(cartItem.getTotalPrice())
-                    .build();
-            orderItems.add(orderItem);
-        }
-
-        savedOrder.setOrderItems(orderItems);
-        orderRepository.save(savedOrder);
-        cartRepository.delete(cart);
-
-        return orderMapper.toDto(order);
+        return order;
     }
 
 

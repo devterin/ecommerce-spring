@@ -13,4 +13,6 @@ public class VariantResponse {
     private Integer price;
     private Integer quantity;
     private List<String> attribute;
+    private Integer image;
+
 }

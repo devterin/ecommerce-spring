@@ -81,7 +81,6 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse getProductById(Long productId) {
         Product product = getProductObjById(productId);
 
-        int countImage = productImageRepository.countByProductId(productId);
 
         return ProductResponse.builder()
                 .id(product.getId())
@@ -89,7 +88,6 @@ public class ProductServiceImpl implements ProductService {
                 .description(product.getDescription())
                 .thumbnail(product.getThumbnail())
                 .category(product.getCategory().getName())
-                .image(countImage)
                 .build();
     }
 

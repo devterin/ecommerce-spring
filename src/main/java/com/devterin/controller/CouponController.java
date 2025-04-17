@@ -16,7 +16,6 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/coupon")
-
 public class CouponController {
     private final CouponServiceImpl couponService;
 

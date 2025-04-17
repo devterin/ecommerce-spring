@@ -40,6 +40,7 @@ public class AttributeMapper {
                 .price(variant.getPrice())
                 .quantity(variant.getStockQuantity())
                 .attribute(variant.getAttributes().stream().map(Attribute::getValue).toList())
+                .image(variant.getImages() != null ? variant.getImages().size() : 0)
                 .build();
     }
 }

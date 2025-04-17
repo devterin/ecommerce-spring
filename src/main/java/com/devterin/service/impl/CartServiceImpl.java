@@ -6,6 +6,8 @@ import com.devterin.entity.Cart;
 import com.devterin.entity.CartItem;
 import com.devterin.entity.User;
 import com.devterin.entity.Variant;
+import com.devterin.exception.AppException;
+import com.devterin.exception.ErrorCode;
 import com.devterin.mapper.CartMapper;
 import com.devterin.repository.CartItemRepository;
 import com.devterin.repository.CartRepository;
@@ -81,7 +83,7 @@ public class CartServiceImpl implements CartService {
         validateVariantStock(request.getVariantId(), request.getQuantity());
         CartItem cartItem = cartItemRepository.findByCartIdAndVariantId(cart.getId(), request.getVariantId());
         if (cartItem == null) {
-            throw new EntityNotFoundException("Product not found in cart");
+            throw new EntityNotFoundException(ErrorCode.VARIANT_NOT_FOUND.getMessage());
         }
         if (request.getQuantity() <= 0) {
             cart.getCartItems().remove(cartItem);
@@ -101,7 +103,7 @@ public class CartServiceImpl implements CartService {
 
         CartItem cartItem = cartItemRepository.findByCartIdAndVariantId(cart.getId(), variantId);
         if (cartItem == null) {
-            throw new EntityNotFoundException("Product not found in cart");
+            throw new EntityNotFoundException(ErrorCode.VARIANT_NOT_FOUND.getMessage());
         }
         cart.getCartItems().remove(cartItem);
         cartItemRepository.delete(cartItem);
@@ -129,7 +131,7 @@ public class CartServiceImpl implements CartService {
         return cartRepository.findByUserId(userId).orElseGet(
                 () -> {
                     User user = userRepository.findById(userId)
-                            .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
                     Cart newCart = Cart.builder()
                             .user(user)
                             .totalPrice(0)
@@ -141,7 +143,7 @@ public class CartServiceImpl implements CartService {
 
     private Variant validateVariantStock(Long variantId, int quantity) {
         Variant variant = variantRepository.findById(variantId)
-                .orElseThrow(() -> new EntityNotFoundException("Variant not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
 
         if (variant.getStockQuantity() < quantity) {
             throw new RuntimeException("The variant " + variant.getProduct().getName() + " is out of stock");

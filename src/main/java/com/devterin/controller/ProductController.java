@@ -6,8 +6,10 @@ import com.devterin.dtos.response.ApiResponse;
 import com.devterin.dtos.response.ProductResponse;
 import com.devterin.entity.Product;
 import com.devterin.entity.ProductImage;
+import com.devterin.entity.Variant;
 import com.devterin.service.ProductImageService;
 import com.devterin.service.ProductService;
+import com.devterin.service.VariantService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,6 +25,7 @@ import java.util.List;
 public class ProductController {
     private final ProductService productService;
     private final ProductImageService productImageService;
+    private final VariantService variantService;
 
     @PostMapping
     public ApiResponse<ProductResponse> createProduct(@RequestPart("request") @Valid ProductRequest request,
@@ -32,10 +35,7 @@ public class ProductController {
 
     //    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ApiResponse<List<ProductResponse>> getAllProducts(
-            @RequestParam(name = "pageNumber", defaultValue = "0", required = false) int pageNumber,
-            @RequestParam(name = "pageSize", defaultValue = "10", required = false) int pageSize
-    ) {
+    public ApiResponse<List<ProductResponse>> getAllProducts(@RequestParam(name = "pageNumber", defaultValue = "0", required = false) int pageNumber, @RequestParam(name = "pageSize", defaultValue = "10", required = false) int pageSize) {
 
         List<ProductResponse> products = productService.getAllProducts(pageNumber, pageSize);
 
@@ -59,9 +59,7 @@ public class ProductController {
 
 
     @PutMapping("/{productId}")
-    public ApiResponse<ProductResponse> updateProduct(@PathVariable Long productId,
-                                                      @RequestPart ProductRequest request,
-                                                      @RequestPart("thumbnail") MultipartFile thumbnail) {
+    public ApiResponse<ProductResponse> updateProduct(@PathVariable Long productId, @RequestPart ProductRequest request, @RequestPart("thumbnail") MultipartFile thumbnail) {
         return ApiResponse.<ProductResponse>builder().message("Product updated").result(productService.updateProduct(productId, request, thumbnail)).build();
     }
 
@@ -73,22 +71,19 @@ public class ProductController {
         return ApiResponse.<Void>builder().message("Product deleted").build();
     }
 
-    @PostMapping("/upload/{productId}")
-    public ApiResponse<List<ProductImageDTO>> uploadImage(@PathVariable Long productId,
-                                                          @RequestParam("file") List<MultipartFile> file) {
+    @PostMapping("/upload/{variantId}")
+    public ApiResponse<List<ProductImageDTO>> uploadImage(@PathVariable Long variantId, @RequestParam("file") List<MultipartFile> file) {
 
-        Product product = productService.getProductObjById(productId);
-        List<ProductImageDTO> savedImage = productImageService.createProductImage(product.getId(), file);
+        Variant variant = variantService.getVariantObjById(variantId);
+        List<ProductImageDTO> savedImage = productImageService.createProductImage(variant.getId(), file);
 
         return ApiResponse.<List<ProductImageDTO>>builder().message("Image uploaded successfully").result(savedImage).build();
     }
 
-    @PutMapping("/update/{productId}/{imageId}")
-    public ApiResponse<ProductImageDTO> updateImage(@PathVariable Long productId,
-                                                    @PathVariable Long imageId,
-                                                    @RequestParam("file") MultipartFile file) {
+    @PutMapping("/update/{variantId}/{imageId}")
+    public ApiResponse<ProductImageDTO> updateImage(@PathVariable Long variantId, @PathVariable Long imageId, @RequestParam("file") MultipartFile file) {
 
-        ProductImageDTO updatedImage = productImageService.updateProductImage(productId, imageId, file);
+        ProductImageDTO updatedImage = productImageService.updateProductImage(variantId, imageId, file);
 
         return ApiResponse.<ProductImageDTO>builder().message("Image updated successfully").result(updatedImage).build();
     }

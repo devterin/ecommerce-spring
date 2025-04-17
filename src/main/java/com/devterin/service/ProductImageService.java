@@ -12,9 +12,9 @@ import java.util.List;
 
 public interface ProductImageService {
 
-    List<ProductImageDTO> getProductImageById(Long productId);
-    List<ProductImageDTO> createProductImage(Long productId, List<MultipartFile> file);
-    ProductImageDTO updateProductImage(Long productId, Long imageId, MultipartFile file);
+    List<ProductImageDTO> getProductImageById(Long variantId);
+    List<ProductImageDTO> createProductImage(Long variantId, List<MultipartFile> file);
+    ProductImageDTO updateProductImage(Long variantId, Long imageId, MultipartFile file);
 
 
 

@@ -12,7 +12,7 @@ public class CouponMapper {
 
         return CouponResponse.builder()
                 .couponId(coupon.getId())
-                .code(coupon.getCode())
+                .code(coupon.getCode() != null ? coupon.getCode() : null)
                 .discountType(coupon.getDiscountType())
                 .discountValue(coupon.getDiscountValue())
                 .minOrderValue(coupon.getMinOrderValue())

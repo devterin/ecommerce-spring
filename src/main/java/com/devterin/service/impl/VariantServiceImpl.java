@@ -34,11 +34,28 @@ public class VariantServiceImpl implements VariantService {
 
     @Override
     public VariantResponse getVariantById(Long variantId) {
+        int countImage = variantRepository.countById(variantId);
+
         Variant variant = variantRepository.findById(variantId).orElseThrow(
                 () -> new RuntimeException("Variant not found"));
 
-        return attributeMapper.toDto(variant);
+        return VariantResponse.builder()
+                .id(variant.getId())
+                .name(variant.getName())
+                .price(variant.getPrice())
+                .quantity(variant.getStockQuantity())
+                .attribute(variant.getAttributes().stream().map(Attribute::getValue).toList())
+                .image(countImage)
+                .build();
     }
+
+    @Override
+    public Variant getVariantObjById(Long variantId) {
+
+        return variantRepository.findById(variantId).orElseThrow(
+                () -> new RuntimeException("Variant not found"));
+    }
+
 
     @Override
     public VariantResponse createVariant(Long productId, VariantRequest request) {
@@ -64,6 +81,7 @@ public class VariantServiceImpl implements VariantService {
                 .name(variantName)
                 .price(request.getPrice())
                 .stockQuantity(request.getQuantity())
+                .soldQuantity(0)
                 .product(product)
                 .attributes(attributes)
                 .build();

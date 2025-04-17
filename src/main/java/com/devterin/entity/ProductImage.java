@@ -22,7 +22,7 @@ public class ProductImage {
     private String imageUrl;
 
     @ManyToOne
-    @JoinColumn(name = "product_id")
+    @JoinColumn(name = "variant_id")
     @JsonBackReference
-    private Product product;
+    private Variant variant;
 }

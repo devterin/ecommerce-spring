@@ -5,6 +5,7 @@ import com.devterin.entity.User;
 import com.devterin.repository.RoleRepository;
 import com.devterin.repository.UserRepository;
 import com.devterin.enums.TypeUser;
+import com.devterin.ultil.AppConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationRunner;
@@ -20,6 +21,7 @@ import java.util.Set;
 public class ApplicationInit {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+
     @Bean
     ApplicationRunner applicationRunner(UserRepository userRepository) {
         return args -> {
@@ -32,7 +34,8 @@ public class ApplicationInit {
                 User user = User.builder()
                         .username("admin")
                         .password(passwordEncoder.encode("admin"))
-                        .active(false)
+                        .avatar(AppConstants.URL_DEFAULT_AVATAR)
+                        .active(true)
                         .roles(Set.of(roles))
                         .build();
                 userRepository.save(user);

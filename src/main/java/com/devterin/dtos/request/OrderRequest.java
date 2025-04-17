@@ -6,9 +6,12 @@ import lombok.Data;
 @Data
 @Builder
 public class OrderRequest {
-    private String note;    // Ghi chú đơn hàng
-    private String address;    // Địa chỉ giao hàng
-    private String paymentMethod;   // Phương thức thanh toán (COD, ONLINE)
+    private String note;
+    private String address;
+    private String paymentMethod;
     private String couponCode;
 
+//    // Flash sale fields
+    private Long flashSaleItemId;
+    private Integer flashSaleQuantity;
 }
