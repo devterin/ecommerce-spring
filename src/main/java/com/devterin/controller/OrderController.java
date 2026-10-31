@@ -4,11 +4,13 @@ import com.devterin.dtos.request.OrderRequest;
 import com.devterin.dtos.response.ApiResponse;
 import com.devterin.dtos.response.OrderResponse;
 import com.devterin.security.CustomUserDetails;
+import jakarta.validation.Valid;
 import com.devterin.enums.OrderStatus;
 import com.devterin.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -20,6 +22,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @GetMapping("/{orderId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<OrderResponse> getOrderById(@PathVariable Long orderId) {
 
         return ApiResponse.<OrderResponse>builder()
@@ -27,7 +30,7 @@ public class OrderController {
                 .build();
     }
 
-    //    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping()
     public ApiResponse<List<OrderResponse>> getAllOrders(
             @RequestParam(name = "pageNumber", defaultValue = "0", required = false) int pageNumber,
@@ -38,7 +41,7 @@ public class OrderController {
     }
 
     @PostMapping
-    public ApiResponse<OrderResponse> createOrder(@RequestBody OrderRequest request,
+    public ApiResponse<OrderResponse> createOrder(@Valid @RequestBody OrderRequest request,
                                                   @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         Long userId = userDetails.getId();
@@ -49,6 +52,7 @@ public class OrderController {
     }
 
     @PatchMapping("/{orderId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<OrderResponse> updateOrderStatus(@PathVariable Long orderId,
                                                         @RequestParam("status") String status) {
 
@@ -87,7 +91,7 @@ public class OrderController {
 
     @PatchMapping("/user/{orderId}")
     public ApiResponse<OrderResponse> updateOrderDetails(@PathVariable Long orderId,
-                                                         @RequestBody OrderRequest request,
+                                                         @Valid @RequestBody OrderRequest request,
                                                          @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         return ApiResponse.<OrderResponse>builder()

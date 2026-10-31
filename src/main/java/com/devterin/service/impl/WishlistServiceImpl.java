@@ -72,10 +72,6 @@ public class WishlistServiceImpl implements WishlistService {
     public List<WishlistResponse> myWishlist() {
         Long userId = getCurrentUserId();
         List<Wishlist> wishlist = wishlistRepository.findWishlistByUserId(userId);
-        if (wishlist.isEmpty()) {
-            throw new IllegalArgumentException("Wishlist not found");
-        }
-
         return wishlist.stream().map(wishlistMapper::toDto).collect(Collectors.toList());
     }
 

@@ -13,8 +13,11 @@ public interface UserService {
     UserResponse createUser(CreateUserRequest request, MultipartFile file);
     List<UserResponse> getAllUsers();
     List<UserResponse> getAllUsers(int pageNumber, int pageSize);
-    UserResponse updateUser(Long userId, UpdateUserRequest request, MultipartFile file);
+    UserResponse updateUser(Long userId, UpdateUserRequest request);
+    UserResponse uploadAvatar(Long userId, MultipartFile file);
+    UserResponse deleteAvatar(Long userId);
     void deleteUser(Long userId);
     User findByUsername(String username);
     UserResponse getMyInfo();
+    void changePassword(Long userId, String currentPassword, String newPassword, String confirmPassword);
 }

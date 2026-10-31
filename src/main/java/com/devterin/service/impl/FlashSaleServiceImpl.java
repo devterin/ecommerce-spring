@@ -66,9 +66,18 @@ public class FlashSaleServiceImpl implements FlashSaleService {
                 .orElseThrow(() -> new AppException(ErrorCode.FLASH_SALE_NOT_FOUND));
 
         LocalDateTime now = LocalDateTime.now();
-        if (flashSale.getStatus().equals(FlashSaleStatus.ACTIVE) ||
+        if (flashSale.getStatus() != FlashSaleStatus.INACTIVE ||
                 now.isAfter(flashSale.getStartTime())) {
-            throw new IllegalStateException("Cannot update flash sale that is active or has started");
+            throw new IllegalStateException("Only an inactive flash sale that has not started can be updated");
+        }
+        if (request.getStartTime() == null || request.getStartTime().isBefore(now.plusMinutes(30))) {
+            throw new IllegalArgumentException("The start time must be at least 30 minutes from the current time.");
+        }
+        if (!flashSale.getName().equals(request.getFlashSaleName()) && flashSaleRepository.existsByName(request.getFlashSaleName())) {
+            throw new IllegalArgumentException("FlashSale name existed");
+        }
+        if (request.getItems() == null || request.getItems().isEmpty()) {
+            throw new IllegalArgumentException("FlashSale must contain at least one item.");
         }
         flashSale.setName(request.getFlashSaleName());
         flashSale.setStartTime(request.getStartTime());
@@ -88,6 +97,11 @@ public class FlashSaleServiceImpl implements FlashSaleService {
                     .orElse(null);
 
             if (existingItem != null) {
+                if (itemRequest.getQuantity() < existingItem.getSoldQuantity()) {
+                    throw new IllegalArgumentException(
+                            "FlashSale quantity cannot be lower than the quantity already sold for variant: "
+                                    + existingItem.getVariant().getName());
+                }
                 existingItem.setSalePrice(newItem.getSalePrice());
                 existingItem.setQuantity(newItem.getQuantity());
                 updatedItems.add(existingItem);
@@ -96,9 +110,15 @@ public class FlashSaleServiceImpl implements FlashSaleService {
             }
         }
 
+        List<Long> retainedVariantIds = updatedItems.stream().map(item -> item.getVariant().getId()).toList();
+        List<FlashSaleItem> removedItems = oldItems.stream()
+                .filter(item -> !retainedVariantIds.contains(item.getVariant().getId()))
+                .toList();
+        flashSaleItemRepository.deleteAll(removedItems);
         List<FlashSaleItem> savedItems = flashSaleItemRepository.saveAll(updatedItems);
         return flashSaleMapper.toDto(flashSale, savedItems);
     }
+
     @Override
     @Transactional
     public void deleteFlashSaleItems(Long flashSaleId, List<Long> variantIds) {
@@ -122,6 +142,7 @@ public class FlashSaleServiceImpl implements FlashSaleService {
         }
         flashSaleItemRepository.deleteAll(itemsToDelete);
     }
+
     @Override
     @Transactional
     public void deactivateFlashSale(Long flashSaleId) {
@@ -134,24 +155,67 @@ public class FlashSaleServiceImpl implements FlashSaleService {
 
         log.info("Flash sale deactivated successfully with ID: {}", flashSaleId);
     }
+
+    @Override
+    @Transactional
+    public void activateFlashSale(Long flashSaleId) {
+        FlashSale flashSale = flashSaleRepository.findById(flashSaleId)
+                .orElseThrow(() -> new EntityNotFoundException("Flash sale not found"));
+        if (flashSale.getStatus() != FlashSaleStatus.INACTIVE) {
+            throw new IllegalStateException("Only an inactive flash sale can be activated");
+        }
+
+        List<FlashSaleItem> items = flashSaleItemRepository.findAllByFlashSaleId(flashSaleId);
+        if (items.isEmpty()) {
+            throw new IllegalStateException("A flash sale needs at least one item before activation");
+        }
+        for (FlashSaleItem item : items) {
+            int remainingStock = item.getVariant().getStockQuantity() == null
+                    ? 0 : item.getVariant().getStockQuantity();
+            if (item.getQuantity() > remainingStock) {
+                throw new IllegalStateException("Insufficient stock for variant: " + item.getVariant().getName());
+            }
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        flashSale.setStartTime(now);
+        flashSale.setEndTime(now.plusHours(2));
+        flashSale.setStatus(FlashSaleStatus.ACTIVE);
+        flashSaleRepository.save(flashSale);
+        log.info("Flash sale activated immediately with ID: {}", flashSaleId);
+    }
+
     @Override
     public List<FlashSaleResponse> getActiveFlashSales() {
         LocalDateTime now = LocalDateTime.now();
         List<FlashSale> flashSales = flashSaleRepository.findByStatusAndStartTimeBeforeAndEndTimeAfter(
                 FlashSaleStatus.ACTIVE, now, now);
-        if (!flashSales.isEmpty()) {
-            return flashSales.stream().map(flashSale -> {
-                List<FlashSaleItem> items = flashSaleItemRepository.findAllByFlashSaleId(flashSale.getId());
-                return flashSaleMapper.toDto(flashSale, items);
-            }).collect(Collectors.toList());
-        } else {
-            throw new EntityNotFoundException("List Flash sale is empty");
-        }
+        return flashSales.stream().map(flashSale -> {
+            List<FlashSaleItem> items = flashSaleItemRepository.findAllByFlashSaleId(flashSale.getId());
+            return flashSaleMapper.toDto(flashSale, items);
+        }).collect(Collectors.toList());
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<FlashSaleResponse> getAllFlashSales() {
+        return flashSaleRepository.findAll().stream().map(flashSale -> {
+            List<FlashSaleItem> items = flashSaleItemRepository.findAllByFlashSaleId(flashSale.getId());
+            return flashSaleMapper.toDto(flashSale, items);
+        }).collect(Collectors.toList());
+    }
+
     @Override
     @Transactional
     public FlashSaleItemResponse purchaseFlashSaleItem(Long userId, OrderRequest request) {
-        FlashSaleItem item = flashSaleItemRepository.findById(request.getFlashSaleItemId())
+        if (!"COD".equals(request.getPaymentMethod())) {
+            throw new IllegalArgumentException("Flash sale checkout currently supports COD only");
+        }
+        if (request.getFlashSaleQuantity() == null || request.getFlashSaleQuantity() < 1) {
+            throw new IllegalArgumentException("Flash sale quantity must be at least 1");
+        }
+
+        FlashSaleItem item = flashSaleItemRepository.findByIdForUpdate(request.getFlashSaleItemId())
                 .orElseThrow(() -> new IllegalArgumentException("FlashSale Item not found"));
 
         FlashSale flashSale = item.getFlashSale();
@@ -166,7 +230,6 @@ public class FlashSaleServiceImpl implements FlashSaleService {
         log.info("Purchased {} units of flash sale item {}", request.getFlashSaleQuantity(), request.getFlashSaleItemId());
         return flashSaleMapper.toItemDto(item);
     }
-
 
     private void validateFlashSaleRequest(FlashSaleRequest request) {
         if (flashSaleRepository.existsByName(request.getFlashSaleName())) {

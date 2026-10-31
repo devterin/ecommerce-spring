@@ -1,7 +1,6 @@
 package com.devterin.dtos.request;
 
 import com.devterin.enums.TypeGender;
-import com.devterin.validator.gender.GenderSubSet;
 import com.devterin.validator.phone.Phone;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
@@ -31,9 +30,8 @@ public class CreateUserRequest {
     private String fullName;
     private String email;
 
-    @GenderSubSet(name = "gender", enumClass = TypeGender.class)
     @NotNull(message = "GENDER_NOT_BLANK_INVALID")
-    private String gender;
+    private TypeGender gender;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @JsonFormat(pattern = "MM-dd-yyyy")

@@ -8,7 +8,7 @@ import java.time.LocalDate;
 @Builder
 public class PaymentDTO {
     private Long paymentId;
-    private Integer amount;
+    private Long amount;
     private String paymentMethod;
     private String paymentStatus;
     private LocalDate paymentDate;

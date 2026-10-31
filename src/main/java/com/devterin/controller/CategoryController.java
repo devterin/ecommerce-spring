@@ -6,6 +6,7 @@ import com.devterin.entity.Category;
 import com.devterin.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -31,6 +32,7 @@ public class CategoryController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<CategoryDTO> createCategory(@RequestBody Category request) {
 
         return ApiResponse.<CategoryDTO>builder()
@@ -39,6 +41,7 @@ public class CategoryController {
     }
 
     @PutMapping("/{categoryId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<CategoryDTO> updateCategory(@PathVariable Long categoryId,
                                                    @RequestBody Category request) {
 
@@ -48,6 +51,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{categoryId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Category> deleteCategory(@PathVariable Long categoryId) {
         categoryService.deleteCategory(categoryId);
 

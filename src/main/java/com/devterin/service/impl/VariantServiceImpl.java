@@ -33,6 +33,13 @@ public class VariantServiceImpl implements VariantService {
     }
 
     @Override
+    public List<VariantResponse> getVariantsByProductId(Long productId) {
+        return variantRepository.findByProductId(productId).stream()
+                .map(attributeMapper::toDto)
+                .toList();
+    }
+
+    @Override
     public VariantResponse getVariantById(Long variantId) {
         int countImage = variantRepository.countById(variantId);
 
@@ -45,6 +52,10 @@ public class VariantServiceImpl implements VariantService {
                 .price(variant.getPrice())
                 .quantity(variant.getStockQuantity())
                 .attribute(variant.getAttributes().stream().map(Attribute::getValue).toList())
+                .attributes(variant.getAttributes().stream().map(attribute -> com.devterin.dtos.response.AttributeValueResponse.builder()
+                        .type(attribute.getAttributeType().getName())
+                        .value(attribute.getValue())
+                        .build()).toList())
                 .image(countImage)
                 .build();
     }
@@ -105,7 +116,7 @@ public class VariantServiceImpl implements VariantService {
                         .joining(" - ", variant.getProduct().getName() + " - ", ""));
         variant.setName(newName);
         //check name is duplicate
-        boolean variantExists = variantRepository.existsByNameAndProductId(newName, variant.getProduct().getId());
+        boolean variantExists = variantRepository.existsByNameAndProductIdAndIdNot(newName, variant.getProduct().getId(), variantId);
         if (variantExists) {
             throw new IllegalArgumentException("Variant with name '" + newName + "' already exists");
         }

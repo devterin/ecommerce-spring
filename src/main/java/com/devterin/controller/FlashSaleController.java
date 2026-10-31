@@ -6,10 +6,12 @@ import com.devterin.dtos.response.ApiResponse;
 import com.devterin.dtos.response.FlashSaleItemResponse;
 import com.devterin.dtos.response.FlashSaleResponse;
 import com.devterin.security.CustomUserDetails;
+import jakarta.validation.Valid;
 import com.devterin.service.FlashSaleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -20,8 +22,16 @@ public class FlashSaleController {
 
     private final FlashSaleService flashSaleService;
 
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<List<FlashSaleResponse>> getAllFlashSales() {
+        return ApiResponse.<List<FlashSaleResponse>>builder()
+                .result(flashSaleService.getAllFlashSales()).build();
+    }
+
     @PostMapping
-    public ApiResponse<FlashSaleResponse> createFlashSale(@RequestBody FlashSaleRequest request) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<FlashSaleResponse> createFlashSale(@Valid @RequestBody FlashSaleRequest request) {
 
         return ApiResponse.<FlashSaleResponse>builder()
                 .message("Created flash_sale")
@@ -29,8 +39,9 @@ public class FlashSaleController {
     }
 
     @PutMapping("/{flashSaleId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<FlashSaleResponse> updateFlashSale(@PathVariable Long flashSaleId,
-                                                          @RequestBody FlashSaleRequest request) {
+                                                          @Valid @RequestBody FlashSaleRequest request) {
 
         return ApiResponse.<FlashSaleResponse>builder()
                 .message("Updated flash_sale")
@@ -38,6 +49,7 @@ public class FlashSaleController {
     }
 
     @DeleteMapping("/{flashSaleId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> deleteFlashSaleItems(@PathVariable Long flashSaleId,
                                                   @RequestBody List<Long> variantIds) {
         flashSaleService.deleteFlashSaleItems(flashSaleId, variantIds);
@@ -46,7 +58,7 @@ public class FlashSaleController {
     }
 
     @PostMapping("/purchase")
-    public ApiResponse<FlashSaleItemResponse> purchaseFlashSaleItem(@RequestBody OrderRequest request,
+    public ApiResponse<FlashSaleItemResponse> purchaseFlashSaleItem(    @Valid @RequestBody OrderRequest request,
                                                                     @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         return ApiResponse.<FlashSaleItemResponse>builder()
@@ -62,11 +74,21 @@ public class FlashSaleController {
                 .result(flashSaleService.getActiveFlashSales()).build();
     }
 
-    @GetMapping("/deactivate/{fsId}")
+    @PostMapping("/deactivate/{fsId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> deactivateFlashSale(@PathVariable Long fsId) {
         flashSaleService.deactivateFlashSale(fsId);
 
         return ApiResponse.<Void>builder()
                 .message("Deactivated flash sale id: " + fsId).build();
+    }
+
+    @PostMapping("/activate/{fsId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<Void> activateFlashSale(@PathVariable Long fsId) {
+        flashSaleService.activateFlashSale(fsId);
+        return ApiResponse.<Void>builder()
+                .message("Activated flash sale id: " + fsId)
+                .build();
     }
 }

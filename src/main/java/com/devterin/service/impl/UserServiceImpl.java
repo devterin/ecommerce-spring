@@ -13,7 +13,7 @@ import com.devterin.repository.UserRepository;
 import com.devterin.service.CloudinaryService;
 import com.devterin.service.UserService;
 import com.devterin.enums.TypeUser;
-import com.devterin.ultil.AppConstants;
+import com.devterin.util.AppConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -88,21 +88,51 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse updateUser(Long userId, UpdateUserRequest request, MultipartFile file) {
+    public UserResponse updateUser(Long userId, UpdateUserRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        String avatarUrl = (file != null && !file.isEmpty())
-                ? cloudinaryService.uploadImage(file, AppConstants.AVATAR) : AppConstants.URL_DEFAULT_AVATAR;
-
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
-        user.setAvatar(avatarUrl);
+        if (request.getGender() != null) {
+            user.setGender(request.getGender());
+        }
         user.setDob(request.getDob());
         user.setAddress(request.getAddress());
         user.setPhoneNumber(request.getPhoneNumber());
 
+        return userMapper.toDTO(userRepository.save(user));
+    }
+
+    @Override
+    public void changePassword(Long userId, String currentPassword, String newPassword, String confirmPassword) {
+        if (!newPassword.equals(confirmPassword)) throw new IllegalArgumentException("New password confirmation does not match");
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) throw new IllegalArgumentException("Current password is incorrect");
+        if (passwordEncoder.matches(newPassword, user.getPassword())) throw new IllegalArgumentException("New password must differ from current password");
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    @Override
+    public UserResponse uploadAvatar(Long userId, MultipartFile file) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        String previousAvatar = user.getAvatar();
+        String avatarUrl = cloudinaryService.uploadImage(file, AppConstants.AVATAR);
+        cloudinaryService.deleteImage(previousAvatar);
+        user.setAvatar(avatarUrl);
+        return userMapper.toDTO(userRepository.save(user));
+    }
+
+    @Override
+    public UserResponse deleteAvatar(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        cloudinaryService.deleteImage(user.getAvatar());
+        user.setAvatar(AppConstants.URL_DEFAULT_AVATAR);
         return userMapper.toDTO(userRepository.save(user));
     }
 

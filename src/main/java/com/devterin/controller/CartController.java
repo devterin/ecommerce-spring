@@ -4,6 +4,7 @@ import com.devterin.dtos.request.CartRequest;
 import com.devterin.dtos.response.ApiResponse;
 import com.devterin.dtos.response.CartResponse;
 import com.devterin.security.CustomUserDetails;
+import jakarta.validation.Valid;
 import com.devterin.service.impl.CartServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +43,7 @@ public class CartController {
     }
 
     @PostMapping
-    public ApiResponse<CartResponse> addProductToCart(@RequestBody CartRequest request,
+    public ApiResponse<CartResponse> addProductToCart(@Valid @RequestBody CartRequest request,
                                                       @AuthenticationPrincipal CustomUserDetails userDetails) {
         Long userId = userDetails.getId();
         log.info("Info user: {}", userDetails);
@@ -54,7 +55,7 @@ public class CartController {
     }
 
     @PutMapping
-    public ApiResponse<CartResponse> updateCart(@RequestBody CartRequest request,
+    public ApiResponse<CartResponse> updateCart(@Valid @RequestBody CartRequest request,
                                                 @AuthenticationPrincipal CustomUserDetails userDetails) {
         Long userId = userDetails.getId();
         log.info("Info user: {}", userDetails);

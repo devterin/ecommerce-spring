@@ -3,9 +3,10 @@ package com.devterin.mapper;
 import com.devterin.dtos.request.CreateUserRequest;
 import com.devterin.dtos.response.UserResponse;
 import com.devterin.entity.User;
-import com.devterin.enums.TypeGender;
-import com.devterin.ultil.AppConstants;
+import com.devterin.util.AppConstants;
 import org.springframework.stereotype.Component;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class UserMapper {
@@ -20,6 +21,9 @@ public class UserMapper {
                 .dob(user.getDob())
                 .phoneNumber(user.getPhoneNumber())
                 .address(user.getAddress())
+                .roles(user.getRoles() == null ? Set.of() : user.getRoles().stream()
+                        .map(role -> role.getName())
+                        .collect(Collectors.toSet()))
                 .build();
     }
 
@@ -28,7 +32,7 @@ public class UserMapper {
                 .username(request.getUsername())
                 .fullName(request.getFullName())
                 .email(request.getEmail())
-                .gender(TypeGender.valueOf(request.getGender()))
+                .gender(request.getGender())
                 .dob(request.getDob())
                 .phoneNumber(request.getPhoneNumber())
                 .address(request.getAddress())

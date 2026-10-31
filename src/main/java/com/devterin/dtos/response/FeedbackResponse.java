@@ -9,7 +9,9 @@ import java.time.LocalDateTime;
 public class FeedbackResponse {
     private Long feedbackId;
     private Long userId;
+    private String userName;
     private Long orderId;
+    private Long productId;
     private Integer rating;
     private String comment;
     private LocalDateTime createdAt;

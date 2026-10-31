@@ -10,7 +10,7 @@ import com.devterin.repository.VariantRepository;
 import com.devterin.service.CloudinaryService;
 import com.devterin.service.ProductImageService;
 import com.devterin.service.ProductService;
-import com.devterin.ultil.AppConstants;
+import com.devterin.util.AppConstants;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

@@ -36,10 +36,15 @@ public class AttributeMapper {
     public VariantResponse toDto(Variant variant) {
         return VariantResponse.builder()
                 .id(variant.getId())
+                .productId(variant.getProduct().getId())
                 .name(variant.getName())
                 .price(variant.getPrice())
                 .quantity(variant.getStockQuantity())
                 .attribute(variant.getAttributes().stream().map(Attribute::getValue).toList())
+                .attributes(variant.getAttributes().stream().map(attribute -> com.devterin.dtos.response.AttributeValueResponse.builder()
+                        .type(attribute.getAttributeType().getName())
+                        .value(attribute.getValue())
+                        .build()).toList())
                 .image(variant.getImages() != null ? variant.getImages().size() : 0)
                 .build();
     }

@@ -7,12 +7,14 @@ import com.devterin.service.AttributeService;
 import com.devterin.service.AttributeTypeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/attribute")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class AttributeController {
 
     private final AttributeService attributeService;

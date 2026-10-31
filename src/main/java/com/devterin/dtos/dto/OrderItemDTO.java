@@ -7,6 +7,7 @@ import lombok.Data;
 @Builder
 public class OrderItemDTO {
     private Long variantId; // ID sản phẩm
+    private Long productId;
     private String name; // Tên sản phẩm
     private Integer quantity;  // Số lượng đặt mua
     private Integer unitPrice; // Giá mỗi sản phẩm

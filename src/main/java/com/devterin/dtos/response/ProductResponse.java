@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,4 +16,11 @@ public class ProductResponse {
     private String description;
     private String thumbnail;
     private String category;
+    private Integer price;
+    private Integer sold;
+    private Long variantId;
+    private List<String> attributes;
+    private Double averageRating;
+    private Long reviewCount;
+    private String slug;
 }

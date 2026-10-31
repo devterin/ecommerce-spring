@@ -9,10 +9,12 @@ import java.util.List;
 @Builder
 public class VariantResponse {
     private Long id;
+    private Long productId;
     private String name;
     private Integer price;
     private Integer quantity;
     private List<String> attribute;
+    private List<AttributeValueResponse> attributes;
     private Integer image;
 
 }

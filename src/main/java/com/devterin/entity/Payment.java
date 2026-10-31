@@ -4,6 +4,7 @@ import com.devterin.enums.PaymentMethod;
 import com.devterin.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,9 +19,9 @@ public class Payment extends BaseEntity {
     @Column(name = "payment_id")
     private Long id;
 
-    private Integer amount; // Số tiền thanh toán
+    private Long amount; // Số tiền thanh toán
 
-    @OneToOne(mappedBy = "payment", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "payment")
     private Order order;
 
     @Enumerated(EnumType.STRING)
@@ -28,5 +29,17 @@ public class Payment extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
+
+    @Column(name = "vnpay_txn_ref", unique = true, length = 100)
+    private String vnpayTxnRef;
+
+    @Column(name = "vnpay_transaction_no", length = 100)
+    private String vnpayTransactionNo;
+
+    @Column(name = "vnpay_payment_url", columnDefinition = "TEXT")
+    private String vnpayPaymentUrl;
+
+    @Column(name = "vnpay_expire_at")
+    private LocalDateTime vnpayExpireAt;
 
 }

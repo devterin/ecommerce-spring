@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 
 @Data
@@ -22,4 +23,5 @@ public class UserResponse {
     private LocalDate dob;
     private String phoneNumber;
     private String address;
+    private Set<String> roles;
 }

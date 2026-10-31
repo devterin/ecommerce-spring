@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface VariantService {
     List<VariantResponse> getAllVariant();
+    List<VariantResponse> getVariantsByProductId(Long productId);
     VariantResponse getVariantById(Long variantId);
     Variant getVariantObjById(Long variantId);
     VariantResponse createVariant(Long productId, VariantRequest request);

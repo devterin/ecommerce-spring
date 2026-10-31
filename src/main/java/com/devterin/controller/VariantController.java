@@ -6,6 +6,7 @@ import com.devterin.dtos.response.VariantResponse;
 import com.devterin.service.VariantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class VariantController {
     private final VariantService variantService;
 
     @PostMapping("/{productId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<VariantResponse> createVariant(@PathVariable Long productId,
                                                       @RequestBody VariantRequest request) {
         return ApiResponse.<VariantResponse>builder()
@@ -29,6 +31,12 @@ public class VariantController {
                 .result(variantService.getAllVariant()).build();
     }
 
+    @GetMapping("/product/{productId}")
+    public ApiResponse<List<VariantResponse>> getVariantsByProductId(@PathVariable Long productId) {
+        return ApiResponse.<List<VariantResponse>>builder()
+                .result(variantService.getVariantsByProductId(productId)).build();
+    }
+
     @GetMapping("/{variantId}")
     public ApiResponse<VariantResponse> getAllVariant(@PathVariable Long variantId) {
         return ApiResponse.<VariantResponse>builder()
@@ -36,6 +44,7 @@ public class VariantController {
     }
 
     @PutMapping("/{variantId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<VariantResponse> updateVariant(@PathVariable Long variantId,
                                                       @RequestBody VariantRequest request) {
         return ApiResponse.<VariantResponse>builder()
@@ -43,6 +52,7 @@ public class VariantController {
     }
 
     @DeleteMapping("/{variantId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> deleteVariant(@PathVariable Long variantId) {
         variantService.deleteVariant(variantId);
 

@@ -1,11 +1,10 @@
 package com.devterin.service;
 
-import com.devterin.dtos.request.OrderFlashSaleRequest;
-import com.devterin.dtos.request.PurchaseFlashSaleItemRequest;
 import com.devterin.dtos.request.OrderRequest;
 import com.devterin.dtos.response.OrderResponse;
 import com.devterin.enums.OrderStatus;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface OrderService {
@@ -18,5 +17,8 @@ public interface OrderService {
     OrderResponse updateOrderStatus(Long orderId, OrderStatus newStatus);
     OrderResponse updateOrderDetails(Long orderId, Long userId, OrderRequest request);
     OrderResponse cancelOrder(Long orderId, Long userId);
+    void failVnPayOrder(Long orderId);
+    void expirePendingVnPayOrders(LocalDateTime now);
+    boolean restoreExpiredVnPayOrder(Long orderId);
     OrderResponse confirmOrderDeliveryByCOD(Long orderId,Long userId);
 }

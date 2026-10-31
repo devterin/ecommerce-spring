@@ -12,7 +12,7 @@ import com.devterin.mapper.OrderMapper;
 import com.devterin.repository.*;
 import com.devterin.service.CouponService;
 import com.devterin.service.OrderService;
-import com.devterin.ultil.AppConstants;
+import com.devterin.util.AppConstants;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,6 +41,7 @@ public class OrderServiceImpl implements OrderService {
     private final CouponService couponService;
     private final OrderMapper orderMapper;
     private final PaymentRepository paymentRepository;
+    private final DeliveryAddressRepository deliveryAddressRepository;
 
 
     @Override
@@ -125,11 +128,12 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalArgumentException(ErrorCode.INSUFFICIENT_QUANTITY.getMessage());
         }
 
-        Variant variant = flashSaleItem.getVariant();
+        Variant variant = variantRepository.findByIdForUpdate(flashSaleItem.getVariant().getId())
+                .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
         if (variant.getStockQuantity() < request.getFlashSaleQuantity()) {
             throw new IllegalArgumentException(ErrorCode.INSUFFICIENT_QUANTITY.getMessage());
         }
-        int totalAmount = variant.getPrice() * request.getFlashSaleQuantity();
+        int totalAmount = flashSaleItem.getSalePrice() * request.getFlashSaleQuantity();
         Order order = buildOrder(user, totalAmount, request);
         List<OrderItem> orderItems = List.of(buildFlashSaleOrderItem(order, flashSaleItem, request));
 
@@ -175,13 +179,18 @@ public class OrderServiceImpl implements OrderService {
 
 
     private Order buildOrder(User user, Integer totalAmount, OrderRequest request) {
+        if (request.getPaymentMethod() == null
+                || (!PaymentMethod.COD.name().equals(request.getPaymentMethod())
+                && !PaymentMethod.VN_PAY.name().equals(request.getPaymentMethod()))) {
+            throw new IllegalArgumentException("Supported payment methods are COD and VN_PAY");
+        }
         Order order = Order.builder()
                 .user(user)
                 .totalAmount(totalAmount)
                 .orderDate(LocalDate.now())
                 .orderStatus(OrderStatus.PENDING)
                 .note(request.getNote())
-                .address(request.getAddress())
+                .address(resolveDeliveryAddress(user, request))
                 .build();
 
         // Apply coupon
@@ -198,7 +207,8 @@ public class OrderServiceImpl implements OrderService {
         order.setShippingFee(shippingFee);
 
         // Create payment
-        int totalAmountPayment = Math.max(0, (order.getTotalAmount() - order.getDiscountAmount()) + shippingFee);
+        long totalAmountPayment = Math.max(0L,
+                (long) order.getTotalAmount() - order.getDiscountAmount() + shippingFee);
         Payment payment = Payment.builder()
                 .amount(totalAmountPayment)
                 .paymentMethod(PaymentMethod.valueOf(request.getPaymentMethod()))
@@ -208,6 +218,13 @@ public class OrderServiceImpl implements OrderService {
         order.setPayment(payment);
 
         return order;
+    }
+
+    private String resolveDeliveryAddress(User user, OrderRequest request) {
+        if (request.getDeliveryAddressId() == null) return request.getAddress();
+        DeliveryAddress address = deliveryAddressRepository.findByIdAndUser_Id(request.getDeliveryAddressId(), user.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Delivery address not found for this user"));
+        return String.join(", ", address.getFirstName() + " " + address.getLastName(), address.getPhoneNumber(), address.getAddress(), address.getCity(), address.getPostalCode());
     }
 
 
@@ -239,7 +256,7 @@ public class OrderServiceImpl implements OrderService {
         if (order.getOrderStatus() != OrderStatus.PENDING)
             throw new IllegalStateException("Order details can only be updated in PENDING status.");
 
-        order.setAddress(request.getAddress());
+        order.setAddress(resolveDeliveryAddress(order.getUser(), request));
         order.setNote(request.getNote());
         orderRepository.save(order);
 
@@ -258,8 +275,19 @@ public class OrderServiceImpl implements OrderService {
         if (order.getOrderStatus() != OrderStatus.PENDING && order.getOrderStatus() != OrderStatus.PROCESSING) {
             throw new IllegalStateException("Order cannot be cancelled in " + order.getOrderStatus() + " status.");
         }
+        Payment payment = paymentRepository.findByIdForUpdate(order.getPayment().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Payment not found"));
+        if (payment.getPaymentMethod() == PaymentMethod.VN_PAY
+                && payment.getPaymentStatus() == PaymentStatus.COMPLETED) {
+            throw new IllegalStateException("A completed VNPay payment cannot be cancelled online");
+        }
+        if (payment.getPaymentMethod() == PaymentMethod.VN_PAY
+                && payment.getPaymentStatus() == PaymentStatus.PENDING
+                && payment.getVnpayExpireAt() != null
+                && java.time.LocalDateTime.now().isBefore(payment.getVnpayExpireAt())) {
+            throw new IllegalStateException("VNPay payment is still active; try cancelling again after it expires.");
+        }
         order.setOrderStatus(OrderStatus.CANCELLED);
-        Payment payment = order.getPayment();
         payment.setPaymentStatus(PaymentStatus.FAILED);
 
         rollbackStock(order.getOrderItems());
@@ -268,6 +296,87 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.save(order);
 
         return orderMapper.toDto(order);
+    }
+
+    @Override
+    @Transactional
+    public void failVnPayOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+        if (order.getPayment().getPaymentMethod() != PaymentMethod.VN_PAY) {
+            throw new IllegalStateException("Order does not use VNPay");
+        }
+        if (order.getPayment().getPaymentStatus() == PaymentStatus.COMPLETED
+                || order.getOrderStatus() == OrderStatus.CANCELLED) {
+            return;
+        }
+        order.getPayment().setPaymentStatus(PaymentStatus.FAILED);
+        order.setOrderStatus(OrderStatus.CANCELLED);
+        rollbackStock(order.getOrderItems());
+        paymentRepository.save(order.getPayment());
+        orderRepository.save(order);
+    }
+
+    @Override
+    @Transactional
+    public void expirePendingVnPayOrders(java.time.LocalDateTime now) {
+        List<Payment> expiredPayments = paymentRepository
+                .findAllByPaymentMethodAndPaymentStatusAndVnpayExpireAtBefore(
+                        PaymentMethod.VN_PAY, PaymentStatus.PENDING, now);
+        for (Payment candidate : expiredPayments) {
+            Payment payment = paymentRepository.findByIdForUpdate(candidate.getId()).orElse(null);
+            if (payment == null
+                    || payment.getPaymentStatus() != PaymentStatus.PENDING
+                    || payment.getVnpayExpireAt() == null
+                    || payment.getVnpayExpireAt().isAfter(now)) {
+                continue;
+            }
+            Order order = payment.getOrder();
+            if (order == null || order.getOrderStatus() != OrderStatus.PENDING) {
+                continue;
+            }
+            payment.setPaymentStatus(PaymentStatus.FAILED);
+            order.setOrderStatus(OrderStatus.CANCELLED);
+            rollbackStock(order.getOrderItems());
+            paymentRepository.save(payment);
+            orderRepository.save(order);
+        }
+    }
+
+    @Override
+    @Transactional
+    public boolean restoreExpiredVnPayOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+        if (order.getOrderStatus() != OrderStatus.CANCELLED
+                || order.getPayment().getPaymentMethod() != PaymentMethod.VN_PAY
+                || (order.getPayment().getPaymentStatus() != PaymentStatus.FAILED
+                && order.getPayment().getPaymentStatus() != PaymentStatus.PENDING)) {
+            return false;
+        }
+
+        Map<Long, Integer> quantitiesByVariant = new HashMap<>();
+        for (OrderItem item : order.getOrderItems()) {
+            quantitiesByVariant.merge(item.getVariant().getId(), item.getQuantity(), Integer::sum);
+        }
+        Map<Long, Variant> variants = new HashMap<>();
+        quantitiesByVariant.keySet().stream().sorted().forEach(variantId ->
+                variants.put(variantId, variantRepository.findByIdForUpdate(variantId)
+                        .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND))));
+        for (var entry : quantitiesByVariant.entrySet()) {
+            if (variants.get(entry.getKey()).getStockQuantity() < entry.getValue()) {
+                return false;
+            }
+        }
+        for (var entry : quantitiesByVariant.entrySet()) {
+            Variant variant = variants.get(entry.getKey());
+            variant.setStockQuantity(variant.getStockQuantity() - entry.getValue());
+            variant.setSoldQuantity(variant.getSoldQuantity() + entry.getValue());
+        }
+        variantRepository.saveAll(variants.values());
+        order.setOrderStatus(OrderStatus.PROCESSING);
+        orderRepository.save(order);
+        return true;
     }
 
     @Override
@@ -310,9 +419,12 @@ public class OrderServiceImpl implements OrderService {
 
     private List<Variant> checkAndUpdateStock(List<CartItem> cartItems) {
         List<Variant> variantsToUpdate = new ArrayList<>();
-        // check stock quantity
+        Map<Long, Variant> variantsById = new HashMap<>();
+        cartItems.stream().map(item -> item.getVariant().getId()).distinct().sorted().forEach(id ->
+                variantsById.put(id, variantRepository.findByIdForUpdate(id)
+                        .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND))));
         for (CartItem item : cartItems) {
-            Variant variant = item.getVariant();
+            Variant variant = variantsById.get(item.getVariant().getId());
             if (variant.getStockQuantity() < item.getQuantity()) {
                 throw new RuntimeException("Not enough stock for variant: " + variant.getProduct().getName());
             }

@@ -4,6 +4,7 @@ import com.devterin.dtos.dto.ProductImageDTO;
 import com.devterin.dtos.request.ProductRequest;
 import com.devterin.dtos.response.ApiResponse;
 import com.devterin.dtos.response.ProductResponse;
+import com.devterin.dtos.response.PageResponse;
 import com.devterin.entity.Product;
 import com.devterin.entity.ProductImage;
 import com.devterin.entity.Variant;
@@ -18,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import org.springframework.data.domain.Page;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,6 +30,7 @@ public class ProductController {
     private final VariantService variantService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<ProductResponse> createProduct(@RequestPart("request") @Valid ProductRequest request,
                                                       @RequestPart("thumbnail") MultipartFile thumbnail) {
         return ApiResponse.<ProductResponse>builder().message("Product created").result(productService.createProduct(request, thumbnail)).build();
@@ -39,11 +42,23 @@ public class ProductController {
 
         List<ProductResponse> products = productService.getAllProducts(pageNumber, pageSize);
 
-        if (products.isEmpty()) {
-            throw new RuntimeException("Product not found.");
-        }
+        return ApiResponse.<List<ProductResponse>>builder().result(products).build();
+    }
 
-        return ApiResponse.<List<ProductResponse>>builder().result(productService.getAllProducts(pageNumber, pageSize)).build();
+    @GetMapping("/page")
+    public ApiResponse<PageResponse<ProductResponse>> getProductPage(
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "12") int pageSize,
+            @RequestParam(required = false) String q) {
+        Page<ProductResponse> page = productService.getProductPage(pageNumber, pageSize, q);
+        return ApiResponse.<PageResponse<ProductResponse>>builder().result(PageResponse.<ProductResponse>builder()
+                .content(page.getContent()).totalElements(page.getTotalElements()).totalPages(page.getTotalPages())
+                .pageNumber(page.getNumber()).pageSize(page.getSize()).build()).build();
+    }
+
+    @GetMapping("/slug/{slug}")
+    public ApiResponse<ProductResponse> getProductBySlug(@PathVariable String slug) {
+        return ApiResponse.<ProductResponse>builder().result(productService.getProductBySlug(slug)).build();
     }
 
     @GetMapping("/{productId}")
@@ -59,11 +74,13 @@ public class ProductController {
 
 
     @PutMapping("/{productId}")
-    public ApiResponse<ProductResponse> updateProduct(@PathVariable Long productId, @RequestPart ProductRequest request, @RequestPart("thumbnail") MultipartFile thumbnail) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<ProductResponse> updateProduct(@PathVariable Long productId, @RequestPart("request") ProductRequest request, @RequestPart("thumbnail") MultipartFile thumbnail) {
         return ApiResponse.<ProductResponse>builder().message("Product updated").result(productService.updateProduct(productId, request, thumbnail)).build();
     }
 
     @DeleteMapping("/{productId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> deleteProduct(@PathVariable Long productId) {
 
         productService.deleteProduct(productId);
@@ -72,6 +89,7 @@ public class ProductController {
     }
 
     @PostMapping("/upload/{variantId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<List<ProductImageDTO>> uploadImage(@PathVariable Long variantId, @RequestParam("file") List<MultipartFile> file) {
 
         Variant variant = variantService.getVariantObjById(variantId);
@@ -81,6 +99,7 @@ public class ProductController {
     }
 
     @PutMapping("/update/{variantId}/{imageId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<ProductImageDTO> updateImage(@PathVariable Long variantId, @PathVariable Long imageId, @RequestParam("file") MultipartFile file) {
 
         ProductImageDTO updatedImage = productImageService.updateProductImage(variantId, imageId, file);

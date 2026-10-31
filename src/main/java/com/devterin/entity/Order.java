@@ -55,7 +55,4 @@ public class Order extends BaseEntity {
     private Coupon coupon;
 
     private Integer discountAmount; // Số tiền được giảm
-
-
-
 }

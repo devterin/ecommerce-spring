@@ -13,6 +13,10 @@ import java.util.List;
 public class OrderResponse {
     private Long orderId;
     private String userEmail;
+    private String customerName;
+    private String phoneNumber;
+    private String address;
+    private String note;
     private String orderStatus;
     private LocalDate orderDate;
     private Integer shippingFee;

@@ -27,6 +27,7 @@ public class CouponController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<List<CouponResponse>> getAllCoupons() {
         List<CouponResponse> coupons = couponService.getAllCoupons();
         return ApiResponse.<List<CouponResponse>>builder()

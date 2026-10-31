@@ -5,7 +5,7 @@ import com.devterin.entity.User;
 import com.devterin.repository.RoleRepository;
 import com.devterin.repository.UserRepository;
 import com.devterin.enums.TypeUser;
-import com.devterin.ultil.AppConstants;
+import com.devterin.util.AppConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationRunner;

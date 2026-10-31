@@ -10,6 +10,8 @@ import java.util.List;
 public interface FlashSaleService {
     FlashSaleItemResponse purchaseFlashSaleItem(Long userId, OrderRequest request);
     List<FlashSaleResponse> getActiveFlashSales();
+    List<FlashSaleResponse> getAllFlashSales();
+    void activateFlashSale(Long flashSaleId);
     public void deactivateFlashSale(Long flashSaleId);
     void deleteFlashSaleItems(Long flashSaleId, List<Long> variantIds);
     FlashSaleResponse updateFlashSale(Long flashSaleId, FlashSaleRequest request);

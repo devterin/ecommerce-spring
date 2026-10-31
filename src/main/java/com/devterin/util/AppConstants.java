@@ -1,4 +1,4 @@
-package com.devterin.ultil;
+package com.devterin.util;
 
 public class AppConstants {
     public static String FOLDER = "ecommerce-spring/";
