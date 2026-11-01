@@ -3,6 +3,7 @@ package com.devterin.controller;
 import com.devterin.dtos.request.OrderRequest;
 import com.devterin.dtos.response.ApiResponse;
 import com.devterin.dtos.response.OrderResponse;
+import com.devterin.dtos.response.PageResponse;
 import com.devterin.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import com.devterin.enums.OrderStatus;
@@ -32,11 +33,11 @@ public class OrderController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping()
-    public ApiResponse<List<OrderResponse>> getAllOrders(
+    public ApiResponse<PageResponse<OrderResponse>> getAllOrders(
             @RequestParam(name = "pageNumber", defaultValue = "0", required = false) int pageNumber,
             @RequestParam(name = "pageSize", defaultValue = "10", required = false) int pageSize) {
 
-        return ApiResponse.<List<OrderResponse>>builder()
+        return ApiResponse.<PageResponse<OrderResponse>>builder()
                 .result(orderService.getAllOrders(pageNumber, pageSize)).build();
     }
 

@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -19,6 +20,9 @@ public class OrderResponse {
     private String note;
     private String orderStatus;
     private LocalDate orderDate;
+    private LocalDateTime createdAt;
+    private LocalDateTime statusConfirmableAt;
+    private boolean canAdminConfirm;
     private Integer shippingFee;
     private Integer totalAmount; // original price
     private String coupon;

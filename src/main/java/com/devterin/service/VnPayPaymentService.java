@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -182,7 +183,7 @@ public class VnPayPaymentService {
                     .orElse(null);
             if (payment != null && amountMatches(payment, params.get("vnp_Amount"))) {
                 orderId = payment.getOrder().getId();
-                Map<String, String> callbackParams = new java.util.HashMap<>(params);
+                Map<String, String> callbackParams = new HashMap<>(params);
                 callbackParams.putIfAbsent(
                         "vnp_TransactionStatus",
                         callbackParams.getOrDefault("vnp_ResponseCode", ""));

@@ -2,6 +2,7 @@ package com.devterin.service;
 
 import com.devterin.dtos.request.OrderRequest;
 import com.devterin.dtos.response.OrderResponse;
+import com.devterin.dtos.response.PageResponse;
 import com.devterin.enums.OrderStatus;
 
 import java.time.LocalDateTime;
@@ -9,7 +10,7 @@ import java.util.List;
 
 public interface OrderService {
     OrderResponse getOrderById(Long orderId);
-    List<OrderResponse> getAllOrders(int pageNumber, int pageSize);
+    PageResponse<OrderResponse> getAllOrders(int pageNumber, int pageSize);
     List<OrderResponse> getOrderByUserId(Long userId);
     OrderResponse getOrderUserByOrderId(Long orderId, Long userId);
     OrderResponse createOrder(Long userId, OrderRequest request);

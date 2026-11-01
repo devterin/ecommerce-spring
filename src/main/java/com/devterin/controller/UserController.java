@@ -5,6 +5,7 @@ import com.devterin.dtos.request.UpdateUserRequest;
 import com.devterin.dtos.request.ChangePasswordRequest;
 import com.devterin.dtos.response.ApiResponse;
 import com.devterin.dtos.response.UserResponse;
+import com.devterin.dtos.response.PageResponse;
 import com.devterin.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,11 +36,11 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ApiResponse<List<UserResponse>> getAllUsers(
+    public ApiResponse<PageResponse<UserResponse>> getAllUsers(
             @RequestParam(name = "pageNumber", defaultValue = "0", required = false) int pageNumber,
             @RequestParam(name = "pageSize", defaultValue = "10", required = false) int pageSize
     ) {
-        return ApiResponse.<List<UserResponse>>builder()
+        return ApiResponse.<PageResponse<UserResponse>>builder()
                 .message("Success")
                 .result(userService.getAllUsers(pageNumber, pageSize)).build();
     }

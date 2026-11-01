@@ -2,11 +2,11 @@ package com.devterin.controller;
 
 import com.devterin.dtos.dto.ProductImageDTO;
 import com.devterin.dtos.request.ProductRequest;
+import com.devterin.dtos.request.ProductPageRequest;
 import com.devterin.dtos.response.ApiResponse;
 import com.devterin.dtos.response.ProductResponse;
 import com.devterin.dtos.response.PageResponse;
-import com.devterin.entity.Product;
-import com.devterin.entity.ProductImage;
+import com.devterin.dtos.response.ProductFilterOptionsResponse;
 import com.devterin.entity.Variant;
 import com.devterin.service.ProductImageService;
 import com.devterin.service.ProductService;
@@ -17,7 +17,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 import org.springframework.data.domain.Page;
 
@@ -36,24 +35,25 @@ public class ProductController {
         return ApiResponse.<ProductResponse>builder().message("Product created").result(productService.createProduct(request, thumbnail)).build();
     }
 
-    //    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ApiResponse<List<ProductResponse>> getAllProducts(@RequestParam(name = "pageNumber", defaultValue = "0", required = false) int pageNumber, @RequestParam(name = "pageSize", defaultValue = "10", required = false) int pageSize) {
-
-        List<ProductResponse> products = productService.getAllProducts(pageNumber, pageSize);
-
-        return ApiResponse.<List<ProductResponse>>builder().result(products).build();
+    public ApiResponse<PageResponse<ProductResponse>> getAllProducts(@RequestParam(name = "pageNumber", defaultValue = "0", required = false) int pageNumber, @RequestParam(name = "pageSize", defaultValue = "10", required = false) int pageSize) {
+        return ApiResponse.<PageResponse<ProductResponse>>builder()
+                .result(productService.getAllProducts(pageNumber, pageSize)).build();
     }
 
     @GetMapping("/page")
-    public ApiResponse<PageResponse<ProductResponse>> getProductPage(
-            @RequestParam(defaultValue = "0") int pageNumber,
-            @RequestParam(defaultValue = "12") int pageSize,
-            @RequestParam(required = false) String q) {
-        Page<ProductResponse> page = productService.getProductPage(pageNumber, pageSize, q);
+    public ApiResponse<PageResponse<ProductResponse>> getProductPage(@ModelAttribute ProductPageRequest request) {
+        Page<ProductResponse> page = productService.getProductPage(request);
         return ApiResponse.<PageResponse<ProductResponse>>builder().result(PageResponse.<ProductResponse>builder()
                 .content(page.getContent()).totalElements(page.getTotalElements()).totalPages(page.getTotalPages())
                 .pageNumber(page.getNumber()).pageSize(page.getSize()).build()).build();
+    }
+
+    @GetMapping("/filter-options")
+    public ApiResponse<ProductFilterOptionsResponse> getProductFilterOptions() {
+        return ApiResponse.<ProductFilterOptionsResponse>builder()
+                .result(productService.getProductFilterOptions())
+                .build();
     }
 
     @GetMapping("/slug/{slug}")

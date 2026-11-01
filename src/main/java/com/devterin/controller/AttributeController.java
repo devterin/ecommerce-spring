@@ -63,14 +63,6 @@ public class AttributeController {
                 .result(attributeService.addAttributeValue(request.getName(),
                         request.getAttributeTypeId())).build();
     }
-
-
-//    @GetMapping("/value/{attributeId}")
-//    public ApiResponse<AttributeValueDTO> getAttributeById(@PathVariable Long attributeId) {
-//        return ApiResponse.<AttributeValueDTO>builder()
-//                .result(attributeValueService.getAttributeValueById(attributeId)).build();
-//    }
-
     @GetMapping("/value/{attributeTypeId}")
     public ApiResponse<List<AttributeDTO>> getAttributeByTypeId(@PathVariable Long attributeTypeId) {
         return ApiResponse.<List<AttributeDTO>>builder()

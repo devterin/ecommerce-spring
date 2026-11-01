@@ -56,7 +56,6 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
-//                                .anyRequest().permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/payment/vnpay/ipn", "/api/v1/payment/vnpay/return").permitAll()
                         .requestMatchers(HttpMethod.POST, WHITE_LIST).permitAll()

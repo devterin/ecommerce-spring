@@ -3,6 +3,7 @@ package com.devterin.service.impl;
 import com.devterin.dtos.request.CreateUserRequest;
 import com.devterin.dtos.request.UpdateUserRequest;
 import com.devterin.dtos.response.UserResponse;
+import com.devterin.dtos.response.PageResponse;
 import com.devterin.entity.Role;
 import com.devterin.entity.User;
 import com.devterin.exception.AppException;
@@ -79,12 +80,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponse> getAllUsers(int pageNumber, int pageSize) {
+    public PageResponse<UserResponse> getAllUsers(int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
         Page<User> page = userRepository.findAll(pageable);
-        List<User> userList = page.getContent();
-
-        return userList.stream().map(userMapper::toDTO).toList();
+        return PageResponse.<UserResponse>builder()
+                .content(page.getContent().stream().map(userMapper::toDTO).toList())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .pageNumber(page.getNumber())
+                .pageSize(page.getSize())
+                .build();
     }
 
     @Override

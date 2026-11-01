@@ -1,7 +1,12 @@
 package com.devterin.service.impl;
 
 import com.devterin.dtos.request.ProductRequest;
+import com.devterin.dtos.dto.ProductRatingView;
 import com.devterin.dtos.response.ProductResponse;
+import com.devterin.dtos.response.ProductFilterOptionsResponse;
+import com.devterin.dtos.response.PageResponse;
+import com.devterin.repository.AttributeRepository;
+import com.devterin.dtos.request.ProductPageRequest;
 import com.devterin.entity.Category;
 import com.devterin.entity.Feedback;
 import com.devterin.entity.Product;
@@ -11,27 +16,33 @@ import com.devterin.repository.CategoryRepository;
 import com.devterin.repository.ProductImageRepository;
 import com.devterin.repository.FeedbackRepository;
 import com.devterin.repository.ProductRepository;
+import com.devterin.repository.specification.ProductSpecifications;
 import com.devterin.service.CloudinaryService;
 import com.devterin.service.ProductService;
 import com.devterin.util.AppConstants;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Arrays;
+import java.util.Map;
 import java.text.Normalizer;
 import java.util.Locale;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
+    private final AttributeRepository attributeRepository;
     private final ProductImageRepository productImageRepository;
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
@@ -40,12 +51,16 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Transactional(readOnly = true)
-    public List<ProductResponse> getAllProducts(int pageNumber, int pageSize) {
+    public PageResponse<ProductResponse> getAllProducts(int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
-
-        List<Product> products = productRepository.findAll(pageable).getContent();
-
-        return products.stream().map(this::enrich).toList();
+        Page<Product> page = productRepository.findAll(pageable);
+        return PageResponse.<ProductResponse>builder()
+                .content(page.getContent().stream().map(this::enrich).toList())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .pageNumber(page.getNumber())
+                .pageSize(page.getSize())
+                .build();
 
     }
 
@@ -145,14 +160,77 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ProductResponse> getProductPage(int pageNumber, int pageSize, String query) {
+    public Page<ProductResponse> getProductPage(ProductPageRequest request) {
+        int pageNumber = request.getPageNumber();
+        int pageSize = request.getPageSize();
+        Integer minPrice = request.getMinPrice();
+        Integer maxPrice = request.getMaxPrice();
         if (pageNumber < 0) throw new IllegalArgumentException("pageNumber must be zero or greater");
+        if (minPrice != null && minPrice < 0) throw new IllegalArgumentException("minPrice must not be negative");
+        if (maxPrice != null && maxPrice < 0) throw new IllegalArgumentException("maxPrice must not be negative");
+        if (minPrice != null && maxPrice != null && minPrice > maxPrice) {
+            throw new IllegalArgumentException("minPrice must not exceed maxPrice");
+        }
+
         int safeSize = Math.min(Math.max(pageSize, 1), 100);
-        Pageable pageable = PageRequest.of(pageNumber, safeSize, Sort.by(Sort.Direction.DESC, "id"));
-        Page<Product> products = query == null || query.isBlank()
-                ? productRepository.findAll(pageable)
-                : productRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(query.trim(), query.trim(), pageable);
-        return products.map(product -> enrich(productMapper.toDto(product)));
+        Pageable pageable = PageRequest.of(pageNumber, safeSize);
+        String normalizedSort = switch (request.getSort() == null ? "" : request.getSort()) {
+            case "price_asc", "price_desc", "sold_desc" -> request.getSort();
+            default -> "id_desc";
+        };
+        var specification = ProductSpecifications.catalog(
+                request.getQ(),
+                request.getCategory(),
+                minPrice,
+                maxPrice,
+                normalizeAttributeFilters(request.getSize()),
+                normalizeAttributeFilters(request.getColor()),
+                normalizedSort
+        );
+        Page<Product> products = productRepository.findAll(specification, pageable);
+        List<ProductResponse> responses = products.getContent().stream()
+                .map(product -> {
+                    ProductResponse response = productMapper.toDto(product);
+                    response.setSlug(slugify(response.getName()));
+                    return response;
+                })
+                .toList();
+
+        if (!responses.isEmpty()) {
+            Map<Long, ProductRatingView> ratings = feedbackRepository
+                    .aggregateRatingsByProductIds(responses.stream().map(ProductResponse::getId).toList())
+                    .stream()
+                    .collect(Collectors.toMap(ProductRatingView::getProductId, Function.identity()));
+
+            responses.forEach(response -> {
+                ProductRatingView rating = ratings.get(response.getId());
+                response.setAverageRating(rating == null ? 0d : rating.getAverageRating());
+                response.setReviewCount(rating == null ? 0L : rating.getReviewCount());
+            });
+        }
+
+        return new PageImpl<>(responses, pageable, products.getTotalElements());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProductFilterOptionsResponse getProductFilterOptions() {
+        return ProductFilterOptionsResponse.builder()
+                .sizes(attributeRepository.findDistinctSizeValues())
+                .colors(attributeRepository.findDistinctColorValues())
+                .build();
+    }
+
+    private List<String> normalizeAttributeFilters(List<String> values) {
+        if (values == null) return null;
+        List<String> normalized = values.stream()
+                .flatMap(value -> Arrays.stream(value.split(",")))
+                .map(String::trim)
+                .filter(value -> !value.isBlank())
+                .map(String::toLowerCase)
+                .distinct()
+                .toList();
+        return normalized.isEmpty() ? null : normalized;
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.devterin.service.impl;
 
 import com.devterin.dtos.request.OrderRequest;
 import com.devterin.dtos.response.OrderResponse;
+import com.devterin.dtos.response.PageResponse;
 import com.devterin.entity.*;
 import com.devterin.enums.OrderStatus;
 import com.devterin.enums.PaymentMethod;
@@ -18,10 +19,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +36,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
+    @Value("${order.confirmation-hold-minutes:30}")
+    private long confirmationHoldMinutes;
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final UserRepository userRepository;
@@ -52,11 +58,16 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderResponse> getAllOrders(int pageNumber, int pageSize) {
+    public PageResponse<OrderResponse> getAllOrders(int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
-
-        List<Order> list = orderRepository.findAll(pageable).getContent();
-        return list.stream().map(orderMapper::toDto).collect(Collectors.toList());
+        Page<Order> page = orderRepository.findAllByOrderByCreatedAtDesc(pageable);
+        return PageResponse.<OrderResponse>builder()
+                .content(page.getContent().stream().map(orderMapper::toDto).toList())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .pageNumber(page.getNumber())
+                .pageSize(page.getSize())
+                .build();
     }
 
 
@@ -73,8 +84,6 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponse getOrderUserByOrderId(Long orderId, Long userId) {
-//        Order orders = orderRepository.findByIdAndUserId(orderId, userId)
-//                .orElseThrow(() -> new EntityNotFoundException("Order not found or access denied"));
         Order order = orderRepository.findById(orderId).orElseThrow(
                 () -> new EntityNotFoundException("Order not found"));
 
@@ -192,6 +201,7 @@ public class OrderServiceImpl implements OrderService {
                 .note(request.getNote())
                 .address(resolveDeliveryAddress(user, request))
                 .build();
+        order.setCreatedAt(LocalDateTime.now());
 
         // Apply coupon
         if (request.getCouponCode() != null && !request.getCouponCode().trim().isEmpty()) {
@@ -231,11 +241,21 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponse updateOrderStatus(Long orderId, OrderStatus newStatus) {
-        Order order = orderRepository.findById(orderId)
+        Order order = orderRepository.findByIdForUpdate(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found"));
 
-        if (order.getOrderStatus() == OrderStatus.CANCELLED) {
-            throw new IllegalStateException("Cannot update a cancelled order");
+        OrderStatus currentStatus = order.getOrderStatus();
+        if (currentStatus == OrderStatus.PENDING && newStatus == OrderStatus.PROCESSING) {
+            if (order.getCreatedAt() == null) {
+                throw new AppException(ErrorCode.ORDER_TIMESTAMP_MISSING);
+            }
+            if (LocalDateTime.now().isBefore(order.getCreatedAt().plusMinutes(confirmationHoldMinutes))) {
+                throw new AppException(ErrorCode.ORDER_CONFIRMATION_HOLD_ACTIVE);
+            }
+        } else if (currentStatus == OrderStatus.PROCESSING && newStatus == OrderStatus.SHIPPED) {
+            // Valid sequential fulfillment transition.
+        } else {
+            throw new AppException(ErrorCode.INVALID_ORDER_TRANSITION);
         }
 
         order.setOrderStatus(newStatus);
@@ -266,7 +286,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponse cancelOrder(Long orderId, Long userId) {
-        Order order = orderRepository.findById(orderId)
+        Order order = orderRepository.findByIdForUpdate(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found"));
 
         if (!order.getUser().getId().equals(userId)) {
@@ -274,6 +294,9 @@ public class OrderServiceImpl implements OrderService {
         }
         if (order.getOrderStatus() != OrderStatus.PENDING && order.getOrderStatus() != OrderStatus.PROCESSING) {
             throw new IllegalStateException("Order cannot be cancelled in " + order.getOrderStatus() + " status.");
+        }
+        if (order.getPayment() == null) {
+            throw new IllegalStateException("Order has no payment record");
         }
         Payment payment = paymentRepository.findByIdForUpdate(order.getPayment().getId())
                 .orElseThrow(() -> new EntityNotFoundException("Payment not found"));
@@ -284,7 +307,7 @@ public class OrderServiceImpl implements OrderService {
         if (payment.getPaymentMethod() == PaymentMethod.VN_PAY
                 && payment.getPaymentStatus() == PaymentStatus.PENDING
                 && payment.getVnpayExpireAt() != null
-                && java.time.LocalDateTime.now().isBefore(payment.getVnpayExpireAt())) {
+                && LocalDateTime.now().isBefore(payment.getVnpayExpireAt())) {
             throw new IllegalStateException("VNPay payment is still active; try cancelling again after it expires.");
         }
         order.setOrderStatus(OrderStatus.CANCELLED);
@@ -319,7 +342,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public void expirePendingVnPayOrders(java.time.LocalDateTime now) {
+    public void expirePendingVnPayOrders(LocalDateTime now) {
         List<Payment> expiredPayments = paymentRepository
                 .findAllByPaymentMethodAndPaymentStatusAndVnpayExpireAtBefore(
                         PaymentMethod.VN_PAY, PaymentStatus.PENDING, now);
@@ -382,7 +405,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponse confirmOrderDeliveryByCOD(Long orderId, Long userId) {
-        Order order = orderRepository.findById(orderId)
+        Order order = orderRepository.findByIdForUpdate(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found"));
 
         // check roles
@@ -392,13 +415,12 @@ public class OrderServiceImpl implements OrderService {
         if (order.getOrderStatus() != OrderStatus.SHIPPED) {
             throw new IllegalStateException("Order is not in SHIPPED status. Cannot confirm delivery.");
         }
-        // check payment method (chỉ áp dụng COD)
+        // COD is completed on receipt; VNPay must retain the gateway-confirmed state.
         Payment payment = order.getPayment();
-        if (payment.getPaymentMethod() != PaymentMethod.COD) {
-            throw new IllegalStateException("This method is only applicable for COD orders.");
-        }
         order.setOrderStatus(OrderStatus.DELIVERED);
-        payment.setPaymentStatus(PaymentStatus.COMPLETED);
+        if (payment.getPaymentMethod() == PaymentMethod.COD) {
+            payment.setPaymentStatus(PaymentStatus.COMPLETED);
+        }
 
         paymentRepository.save(payment);
         orderRepository.save(order);
@@ -407,12 +429,28 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private void rollbackStock(List<OrderItem> orderItems) {
-        List<Variant> variantsToUpdate = new ArrayList<>();
+        Map<Long, Integer> quantitiesByVariant = new HashMap<>();
+        Map<Long, Integer> quantitiesByFlashSaleItem = new HashMap<>();
         for (OrderItem item : orderItems) {
-            Variant variant = item.getVariant();
-            variant.setStockQuantity(variant.getStockQuantity() + item.getQuantity());
-            variant.setSoldQuantity(variant.getSoldQuantity() - item.getQuantity());
+            quantitiesByVariant.merge(item.getVariant().getId(), item.getQuantity(), Integer::sum);
+            if (item.getFlashSaleItem() != null) {
+                quantitiesByFlashSaleItem.merge(item.getFlashSaleItem().getId(), item.getQuantity(), Integer::sum);
+            }
+        }
+        List<Variant> variantsToUpdate = new ArrayList<>();
+        for (Map.Entry<Long, Integer> entry : quantitiesByVariant.entrySet()) {
+            Variant variant = variantRepository.findByIdForUpdate(entry.getKey())
+                    .orElseThrow(() -> new AppException(ErrorCode.VARIANT_NOT_FOUND));
+            int quantity = entry.getValue();
+            variant.setStockQuantity(variant.getStockQuantity() + quantity);
+            variant.setSoldQuantity(Math.max(0, variant.getSoldQuantity() - quantity));
             variantsToUpdate.add(variant);
+        }
+        for (Map.Entry<Long, Integer> entry : quantitiesByFlashSaleItem.entrySet()) {
+            FlashSaleItem flashSaleItem = flashSaleItemRepository.findByIdForUpdate(entry.getKey())
+                    .orElseThrow(() -> new EntityNotFoundException("Flash Sale item not found"));
+            flashSaleItem.setSoldQuantity(Math.max(0, flashSaleItem.getSoldQuantity() - entry.getValue()));
+            flashSaleItemRepository.save(flashSaleItem);
         }
         variantRepository.saveAll(variantsToUpdate);
     }

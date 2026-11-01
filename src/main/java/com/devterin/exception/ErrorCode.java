@@ -32,7 +32,10 @@ public enum ErrorCode {
     INSUFFICIENT_QUANTITY(120, "Insufficient quantity", HttpStatus.BAD_REQUEST),
     INVALID_TIME_RANGE(120, "Invalid time range", HttpStatus.BAD_REQUEST),
 
-    FLASH_SALE_NOT_FOUND(121, "Flash sale not found" ,HttpStatus.BAD_REQUEST );
+    FLASH_SALE_NOT_FOUND(121, "Flash sale not found" ,HttpStatus.BAD_REQUEST ),
+    ORDER_CONFIRMATION_HOLD_ACTIVE(122, "The order cannot be confirmed before the confirmation hold expires", HttpStatus.BAD_REQUEST),
+    INVALID_ORDER_TRANSITION(123, "Invalid order status transition", HttpStatus.BAD_REQUEST),
+    ORDER_TIMESTAMP_MISSING(124, "Order creation time is missing", HttpStatus.INTERNAL_SERVER_ERROR);
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

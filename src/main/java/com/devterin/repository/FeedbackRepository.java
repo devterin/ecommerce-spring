@@ -1,13 +1,13 @@
 package com.devterin.repository;
 
-import com.devterin.entity.Attribute;
+import com.devterin.dtos.dto.ProductRatingView;
 import com.devterin.entity.Feedback;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -36,5 +36,15 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
             ORDER BY f.createdAt DESC
             """)
     List<Feedback> findAllProductFeedback(@Param("productId") Long productId);
+
+    @Query("""
+            SELECT f.product.id AS productId,
+                   AVG(f.rating) AS averageRating,
+                   COUNT(f.id) AS reviewCount
+            FROM Feedback f
+            WHERE f.product.id IN :productIds
+            GROUP BY f.product.id
+            """)
+    List<ProductRatingView> aggregateRatingsByProductIds(@Param("productIds") Collection<Long> productIds);
 
 }
